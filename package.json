@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepare": "husky"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.1",
@@ -30,6 +31,7 @@
     "eslint-plugin-astro": "^2.1.1",
     "eslint-plugin-boundaries": "^7.0.2",
     "globals": "^17.7.0",
+    "husky": "^9.1.7",
     "prettier": "^3.9.5",
     "prettier-plugin-astro": "^0.14.1",
     "tailwindcss": "^4.3.2",
