@@ -4,8 +4,9 @@
 
 ## Próximo paso
 
-Módulo 2 (motor núcleo, TDD desde las tablas de `docs/02` §1–3, §7).
-Leer `docs/02` §1–3 y §7 según la tabla de ruteo de CLAUDE.md.
+Módulo 3 (validación y tipos, TDD: esquemas Zod, rangos y clampeos).
+Leer `docs/02` §6 y `docs/04` §5 según la tabla de ruteo de CLAUDE.md.
+Antes: merge del PR de M2 (`feature/modulo-02-motor-nucleo` → `dev`).
 
 ## Checklist canónica de módulos
 
@@ -14,7 +15,7 @@ Leer `docs/02` §1–3 y §7 según la tabla de ruteo de CLAUDE.md.
 - [x] **M1 · Setup**: Astro + React + Tailwind + Vitest + Playwright +
       eslint-plugin-boundaries + Prettier; estructura de `docs/01` §3;
       `.env.example`; script de versión en UI.
-- [ ] **M2 · Motor núcleo** [TDD]: tasas equivalentes, simulación mensual,
+- [x] **M2 · Motor núcleo** [TDD]: tasas equivalentes, simulación mensual,
       resultado con filas anuales y totales (`docs/02` §1–3, §7).
 - [ ] **M3 · Validación y tipos** [TDD]: esquemas Zod, rangos y clampeos
       (`docs/02` §6), tipos compartidos core↔UI.
@@ -73,6 +74,18 @@ Leer `docs/02` §1–3 y §7 según la tabla de ruteo de CLAUDE.md.
 - **M1 · Hook pre-commit (husky)** ejecuta `npm run lint` para materializar
   "lint en rojo bloquea commit" (CLAUDE.md §8).
 
+- **M2 · `FilaAnual.aportado` sin capital inicial**: la torta de `docs/04` §4
+  separa inicial/aportes/interés; así `Σ aportado + P = totalAportado`
+  (`docs/06` §1).
+- **M2 · `FilaAnual.meses`**: campo extra sobre el contrato de `docs/01` §5
+  para marcar la fila parcial ("se marca", `docs/02` §2) y servir a la UI de M6.
+- **M2 · `multiplicador = 0` si `totalAportado = 0`** (P=0 y aporte 0): evita
+  NaN; determinista y seguro para la UI.
+- **M2 · Hooks `tasa(t)`/`aporte(t)`** dentro de `calcular`: constantes en M2;
+  M9/M10 solo cambian su construcción, no el bucle (orden literal de `docs/02` §2).
+- **M2 · Barrel de `core` = firma pública de `docs/01` §5**: las funciones de
+  tasas (`docs/02` §1) quedan internas; los tests las importan por ruta relativa.
+
 ## Trampas conocidas
 
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
@@ -89,8 +102,21 @@ Leer `docs/02` §1–3 y §7 según la tabla de ruteo de CLAUDE.md.
 - Los bloques del glide se cuentan DESDE EL FINAL (`docs/02` §5); contarlos
   desde el inicio de la protección da otra escalera en duraciones no múltiplo de 12.
 
+- En `calcular`, `interesMes = balance * tasa(t)` (para la fila) y
+  `balance = balance * (1 + tasa(t)) + aporte` no son bit-idénticos en float64:
+  `Σ filas.interes` puede diferir de `interesTotal` por ULPs (muy por debajo de
+  ±0,01). No comparar esas dos cifras con igualdad estricta.
+
 ## Historial de sesiones
 
+- **2026-07-11 · Sesión 2 — M2 Motor núcleo** ✅. Rama
+  `feature/modulo-02-motor-nucleo` (4 commits granulares sobre `dev`). TDD
+  estricto: tests de tablas primero (rojo verificado), luego implementación.
+  23 tests verdes: tabla de tasas §1 (8 anclas), N1–N7, escenario §3
+  (677 839,48), filas anuales (parcial marcada, cuadre con totales), bordes.
+  Revisión de diff con subagente fresco: sin bloqueantes; su nota accionable
+  (superficie pública extra en el barrel) se aplicó; las otras dos quedaron
+  anotadas como decisión/trampa. Pendiente humano: mergear PR a `dev`.
 - **2026-07-11 · Sesión 1 — M1 Setup** ✅. Rama `feature/modulo-01-setup`
   (12 commits granulares sobre `dev`). Scaffold manual (no `npm create astro`:
   pisaba README.md). Build + Vitest (1/1) + Playwright e2e (2/2, chromium,
