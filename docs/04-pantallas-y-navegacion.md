@@ -77,15 +77,15 @@ derecha. Mobile: resultados debajo con scroll automático al calcular.
 
 ## 6. Flujos e2e (Playwright — contrato de comportamiento)
 
-| Flujo | Pasos | Verificación |
-|---|---|---|
-| F1 cálculo básico | defaults → Calcular | cifra y tabla visibles; frase resumen correcta |
-| F2 ejemplo | "Ver un ejemplo" | formulario lleno con E1 y resultado 1 006 969 (redondeo cifra grande) |
-| F3 conserva valores | configurar protección en Experto → ir a Básica → calcular → volver | Básica ignora protección; valores intactos en Experto |
-| F4 error inline | tasa 150 → blur → Calcular | mensaje bajo el campo; scroll+focus; sin cálculo |
-| F5 meta $0 | P=80 000, meta 50 000, 10 años | frase `META_SUPERADA` con sobrante 166 563 |
-| F6 compartir | E1 → Compartir → abrir URL en contexto nuevo | tab Avanzada abierto, secciones expandidas, resultado calculado |
-| F7 URL inválida | `?tasa=abc&ini=5000` | ini=5 000, tasa=default, aviso suave, página funcional |
-| F8 idioma | mismo flujo F1 en `/en/` | textos en inglés, números formato en-US |
-| F9 reduced-motion | emular `prefers-reduced-motion` → Calcular | resultado aparece sin animación |
-| F10 inflación | E1 → toggle | cifra grande 480 934; tabla con columna real; torta proporciones intactas |
+| Flujo               | Pasos                                                              | Verificación                                                              |
+| ------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| F1 cálculo básico   | defaults → Calcular                                                | cifra y tabla visibles; frase resumen correcta                            |
+| F2 ejemplo          | "Ver un ejemplo"                                                   | formulario lleno con E1 y resultado 1 006 969 (redondeo cifra grande)     |
+| F3 conserva valores | configurar protección en Experto → ir a Básica → calcular → volver | Básica ignora protección; valores intactos en Experto                     |
+| F4 error inline     | tasa 150 → blur → Calcular                                         | mensaje bajo el campo; scroll+focus; sin cálculo                          |
+| F5 meta $0          | P=80 000, meta 50 000, 10 años                                     | frase `META_SUPERADA` con sobrante 166 563                                |
+| F6 compartir        | E1 → Compartir → abrir URL en contexto nuevo                       | tab Avanzada abierto, secciones expandidas, resultado calculado           |
+| F7 URL inválida     | `?tasa=abc&ini=5000`                                               | ini=5 000, tasa=default, aviso suave, página funcional                    |
+| F8 idioma           | mismo flujo F1 en `/en/`                                           | textos en inglés, números formato en-US                                   |
+| F9 reduced-motion   | emular `prefers-reduced-motion` → Calcular                         | resultado aparece sin animación                                           |
+| F10 inflación       | E1 → toggle                                                        | cifra grande 480 934; tabla con columna real; torta proporciones intactas |

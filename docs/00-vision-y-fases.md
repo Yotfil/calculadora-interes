@@ -40,11 +40,11 @@ la protección y modo meta integrado.
 
 ## Fases
 
-| Fase | Alcance | Release |
-|---|---|---|
-| 1 | Motor núcleo + tab Básica completa + resultados con gráficos + i18n + SEO + deploy | 1.0.0 |
-| 2 | Escalonado + glide path + métricas derivadas + tabs Avanzada y Experto | 1.1.0 |
-| 3 | Modo meta + toggle inflación + compartir URL | 1.2.0 |
+| Fase | Alcance                                                                            | Release |
+| ---- | ---------------------------------------------------------------------------------- | ------- |
+| 1    | Motor núcleo + tab Básica completa + resultados con gráficos + i18n + SEO + deploy | 1.0.0   |
+| 2    | Escalonado + glide path + métricas derivadas + tabs Avanzada y Experto             | 1.1.0   |
+| 3    | Modo meta + toggle inflación + compartir URL                                       | 1.2.0   |
 
 Los módulos concretos de cada fase viven SOLO en `docs/ESTADO.md`.
 

@@ -1,10 +1,12 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
-import tailwindcss from '@tailwindcss/vite';
-import { readFileSync } from 'node:fs';
+import { defineConfig } from "astro/config";
+import react from "@astrojs/react";
+import tailwindcss from "@tailwindcss/vite";
+import { readFileSync } from "node:fs";
 
-const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+const pkg = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf8"),
+);
 
 // output: 'static' es el default de Astro — SSG sin adapter (docs/01 §2).
 export default defineConfig({
