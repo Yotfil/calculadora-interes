@@ -7,18 +7,18 @@ Este repositorio de documentos es el **contrato** entre el diseño de producto
 
 ## Índice
 
-| Documento | Contenido |
-|---|---|
-| `CLAUDE.md` | Reglas de trabajo para Claude Code (liviano, se carga cada sesión) |
-| `docs/ESTADO.md` | Bitácora viva: checklist canónica de módulos, decisiones sobre la marcha, trampas, próximo paso |
-| `docs/00-vision-y-fases.md` | Qué es el producto, para quién, fases de entrega |
-| `docs/01-arquitectura-y-stack.md` | Stack, estructura de carpetas, reglas de límites, testing |
-| `docs/02-motor-de-calculo.md` | El motor: fórmulas, escalonado, glide path, rangos, tablas de casos |
-| `docs/03-modo-meta-e-inflacion.md` | Despeje del aporte, deflactación, casos especiales |
-| `docs/04-pantallas-y-navegacion.md` | Tabs, pasos, resultados, URL compartible, estados |
-| `docs/05-diseno-visual-y-tokens.md` | Identidad, tokens en dos capas, temas, animación firma, accesibilidad |
-| `docs/06-metricas-y-analitica.md` | Métricas para el usuario (fórmulas) y del producto (GA4, Search Console, SEO) |
-| `docs/07-i18n-y-contenido.md` | Rutas por idioma, diccionarios, copy canónico en español |
+| Documento                           | Contenido                                                                                       |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `CLAUDE.md`                         | Reglas de trabajo para Claude Code (liviano, se carga cada sesión)                              |
+| `docs/ESTADO.md`                    | Bitácora viva: checklist canónica de módulos, decisiones sobre la marcha, trampas, próximo paso |
+| `docs/00-vision-y-fases.md`         | Qué es el producto, para quién, fases de entrega                                                |
+| `docs/01-arquitectura-y-stack.md`   | Stack, estructura de carpetas, reglas de límites, testing                                       |
+| `docs/02-motor-de-calculo.md`       | El motor: fórmulas, escalonado, glide path, rangos, tablas de casos                             |
+| `docs/03-modo-meta-e-inflacion.md`  | Despeje del aporte, deflactación, casos especiales                                              |
+| `docs/04-pantallas-y-navegacion.md` | Tabs, pasos, resultados, URL compartible, estados                                               |
+| `docs/05-diseno-visual-y-tokens.md` | Identidad, tokens en dos capas, temas, animación firma, accesibilidad                           |
+| `docs/06-metricas-y-analitica.md`   | Métricas para el usuario (fórmulas) y del producto (GA4, Search Console, SEO)                   |
+| `docs/07-i18n-y-contenido.md`       | Rutas por idioma, diccionarios, copy canónico en español                                        |
 
 ## Decisiones ya tomadas (NO re-abrir)
 

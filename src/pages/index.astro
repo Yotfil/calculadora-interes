@@ -1,0 +1,20 @@
+---
+// Placeholder hasta M4 (rutas /es/ /en/) y M5 (formulario). docs/04.
+import "../styles/global.css";
+import Calculadora from "../ui/Calculadora";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Calculadora de interés compuesto</title>
+  </head>
+  <body class="bg-superficie text-texto">
+    <main>
+      <Calculadora client:load />
+    </main>
+    <footer data-testid="version">v{__APP_VERSION__}</footer>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+/*
+ * Única fuente de tokens (docs/01 §3, docs/05).
+ *
+ * Capa 1 — PRIMITIVAS: valores crudos. Solo la capa 2 puede consumirlas.
+ * Capa 2 — SEMÁNTICAS: lo único que consumen los componentes, vía clases
+ * Tailwind. Los temas claro/oscuro (M6) redefinen SOLO esta capa.
+ *
+ * Los valores definitivos llegan con docs/05 (M5/M6); esto es el esqueleto.
+ */
+
+/* Capa 1 — primitivas */
+:root {
+  --primitivo-gris-900: #111827; /* placeholder hasta docs/05 */
+  --primitivo-blanco: #ffffff; /* placeholder hasta docs/05 */
+}
+
+/* Capa 2 — semánticas */
+:root {
+  --sem-superficie: var(--primitivo-blanco);
+  --sem-texto: var(--primitivo-gris-900);
+}
+
+/*
+ * Puente Tailwind v4: expone las semánticas como utilidades
+ * (bg-superficie, text-texto, …). `inline` hace que la utilidad emita
+ * var(--sem-*) resuelta en el punto de uso → el cambio de tema por
+ * redefinición de --sem-* funciona sin recompilar.
+ */
+@theme inline {
+  --color-superficie: var(--sem-superficie);
+  --color-texto: var(--sem-texto);
+}
