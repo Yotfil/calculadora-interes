@@ -79,6 +79,13 @@ test.describe("SEO por idioma (docs/06 §3)", () => {
         0,
       );
     });
+
+    test(`/${locale}/: declara el favicon SVG`, async ({ page }) => {
+      await page.goto(`/${locale}/`);
+      await expect(
+        page.locator('link[rel="icon"][type="image/svg+xml"]'),
+      ).toHaveAttribute("href", "/favicon.svg");
+    });
   }
 
   test("la description difiere entre es y en", async ({ page }) => {
