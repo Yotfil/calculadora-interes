@@ -31,9 +31,9 @@ const commitHash = (process.env.COMMIT_REF || git("rev-parse HEAD", "")).slice(
 const commitDate = git("log -1 --format=%cs", ""); // %cs = YYYY-MM-DD (committer date)
 const buildYear = commitDate.slice(0, 4) || String(new Date().getFullYear()); // copyright
 
-// Dominio de producción: PLACEHOLDER hasta M8 (deploy). Fija canonical, hreflang
-// y las URLs absolutas del sitemap (docs/06 §3). Único punto de cambio en M8.
-const SITE = "https://calculadora-interes.example";
+// Dominio de producción. Fija canonical, hreflang y las URLs absolutas del
+// sitemap (docs/06 §3). Netlify sirve HTTPS con cert automático, por eso https.
+const SITE = "https://helenguevara.com";
 
 // output: 'static' es el default de Astro — SSG sin adapter (docs/01 §2).
 export default defineConfig({

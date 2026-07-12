@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-// Espeja `site` de astro.config.mjs (PLACEHOLDER hasta M8). canonical/hreflang
+// Espeja `site` de astro.config.mjs (dominio de producción). canonical/hreflang
 // son absolutos contra este host, no contra el de preview (localhost:4321).
-const SITE = "https://calculadora-interes.example";
+const SITE = "https://helenguevara.com";
 
 test.describe("SEO por idioma (docs/06 §3)", () => {
   for (const locale of ["es", "en"] as const) {
