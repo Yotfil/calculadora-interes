@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 
+import { track } from "../analytics/track";
 import { calcular as calcularMotor } from "../core";
 import type { Resultado as ResultadoMotor } from "../core";
 import type { Diccionario } from "../i18n/diccionario";
@@ -49,6 +50,13 @@ const DEFAULTS: Record<string, string> = {
   duracionUnidad: "a",
   tasaNominalAnual: "8",
   frecuencia: "12",
+};
+
+// El evento GA4 `calcular` reporta el nivel con `tab` (b/a/e, docs/06 §2).
+const TAB_EVENTO: Record<string, "b" | "a" | "e"> = {
+  basica: "b",
+  avanzada: "a",
+  experto: "e",
 };
 
 // Orden de foco al primer error (docs/04 §3). Unidad y frecuencia no producen error.
@@ -162,6 +170,13 @@ export default function Calculadora({ locale, dict }: Props) {
       duracion: datos.duracion,
       duracionUnidad: datos.duracionUnidad,
       animar: !prefiereReducir(),
+    });
+    // Telemetría (docs/06 §2). En Fase 1 solo existe la Básica: impulso y
+    // protección son features de M12/M13, así que van en false fijos.
+    track("calcular", {
+      tab: TAB_EVENTO[tab] ?? "b",
+      con_impulso: false,
+      con_proteccion: false,
     });
   }
 
