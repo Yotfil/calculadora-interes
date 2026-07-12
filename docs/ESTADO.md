@@ -300,7 +300,8 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
   nativo oculto), colapsados por defecto → ocupa menos espacio; sigue indexable y el JSON-LD
   FAQPage no cambia. Tests de FAQ migrados a `summary`/`details > p` + test de colapso.
   142 unit + 36 e2e. Verificación visual claro/oscuro a 1600px. Revisión de diff con
-  subagente fresco: sin bloqueantes.
+  subagente fresco: sin bloqueantes. Mergeado a `dev` (PR #12). "Snowball" es
+  provisional ("por ahora"): el nombre definitivo se cambia solo en `titulo` (es+en).
 - **2026-07-12 · Extra (post-M7) — Branding de header/footer** ✅. Rama
   `feature/header-footer-branding` (base `dev`). Tarea de UI NO planeada (pedido de
   Jef sobre la marcha, fuera de la checklist). Header diferenciado con `bg-fondo` +
@@ -313,6 +314,7 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
   `footer.creadoPor`/`footer.derechos` (es+en, paridad intacta). 142 unit + 34 e2e
   (+4 branding). Verificación visual claro/oscuro con screenshots. Revisión de diff
   con subagente fresco: sin bloqueantes; su NIT (línea "· ·" sin git) se blindó.
+  Mergeado a `dev` (PR #11). `main` sigue sin avanzar (el primer release es M8).
 - **2026-07-12 · Sesión 7 — M7 SEO + analítica** ✅. Rama
   `feature/modulo-07-seo-analitica` (8 commits granulares sobre `dev`). Tarea
   estructural multi-archivo (Plan Mode + confirmación de 3 decisiones con Jef:
