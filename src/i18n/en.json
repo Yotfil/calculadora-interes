@@ -1,5 +1,8 @@
 {
   "titulo": "Compound interest calculator",
+  "seo": {
+    "description": "Free compound interest calculator: project how much your money will grow with monthly contributions and different compounding frequencies."
+  },
   "idioma": {
     "es": "Español",
     "en": "English",
@@ -144,11 +147,17 @@
     "toggle": "Toggle theme"
   },
   "faq": {
+    "titulo": "Frequently asked questions",
     "p1": "What is compound interest?",
+    "r1": "Compound interest is the interest you earn not only on your money, but also on the interest you've already accumulated. It's \"interest on interest\". Imagine you invest 100 and after a year it becomes 110: in the second year you don't earn interest on 100, but on 110, and so on. That small difference, repeated year after year, makes growth speed up over time instead of moving in a straight line. That's why the most powerful factor is usually not how much you contribute, but how many years you let the money keep compounding without withdrawing it.",
     "p2": "What does compounding frequency mean?",
+    "r2": "Compounding frequency is how often the interest earned is added to your capital and, in turn, starts earning more interest. With annual compounding that jump happens once a year; with monthly compounding, twelve times. At the same nominal rate, compounding more often yields a bit more, because the interest is reinvested sooner and works for a longer time. The gap between monthly and annual is usually modest, but real, and it grows when the rate or the time horizon are larger. In this calculator you can choose the frequency and see how the final result changes.",
     "p3": "Why is it worth contributing more in the early years?",
+    "r3": "Each contribution grows according to how long it stays invested, so money that goes in early compounds for more years and ends up weighing far more than money that arrives at the end. Concentrating an extra effort in the first years —what we call an \"early boost\"— takes advantage of exactly that edge. In our example case, front-loading contributions during the first years reaches the same final result while contributing about 40,000 dollars less in total than a constant-contribution plan. Saving more at the start isn't always possible, but when it is, time multiplies the effect.",
     "p4": "What is \"final protection\"?",
-    "p5": "Are the results guaranteed?"
+    "r4": "\"Final protection\" gradually lowers the expected return during the last years of your plan, instead of keeping it high until the very last day. It's the idea behind many retirement funds: as the goal gets closer, less risk is taken to protect what's already been achieved from an ill-timed drop. That caution has a visible cost: by expecting less return at the end, the projected result is a little lower than protecting nothing at all. The calculator shows you that cost in money, so you can decide sensibly how much peace of mind you want to buy.",
+    "p5": "Are the results guaranteed?",
+    "r5": "No. The results are a projection, not a promise. They assume a constant rate of return that you choose, but real markets rise and fall, and no past performance guarantees future returns. Think of the figure as an orderly scenario for comparing decisions —how much to contribute, for how long, and how often—, not as the exact balance you'll have. We also don't account for taxes, fees or personal surprises. This tool is educational and does not constitute financial advice: before investing, consider your own situation and, if you need to, consult a professional you trust."
   },
   "descargo": "This calculator is an educational tool. The results are projections based on the assumptions you enter and do not constitute financial advice or a guarantee of returns."
 }
