@@ -4,16 +4,18 @@
 
 ## Próximo paso
 
-Módulo 5 (UI formulario Básica: layout, tabs, pasos 1–4, validación inline).
-Leer `docs/04` §1–3 y `docs/05` según la tabla de ruteo de CLAUDE.md.
-**Pendiente heredado de M4 (bloqueante para las validaciones):** el esquema Zod
-(M3) emite claves `errores.<campo>.rango|.numero|.entero`, pero el diccionario
-guarda plantillas genéricas `error.rango|.numero|.entero` con `{min}/{max}`
-(docs/07 §3). M5 debe (a) exponer min/max por campo desde `formulario.ts` (hoy
-literales inline en `numeroEnRango`) y (b) mapear el sufijo de la clave del
-esquema a la plantilla genérica e interpolar min/max. Sin ese mapeo, los errores
-renderizarían la clave cruda. Además, `resultados.*` y `pasos.*` no se sembraron
-en M4 (docs/07 no da su texto literal): nacen en M5/M6 desde `docs/04`.
+Módulo 6 (UI resultados: cifra grande + frase, torta, barras, tabla, animación
+firma, ejemplo precargado, temas claro/oscuro). Leer `docs/04` §4, `docs/05` y
+`docs/06` §1 según la tabla de ruteo de CLAUDE.md.
+**Base que deja M5 para M6:** la isla `Calculadora` ya tiene el estado del
+formulario (strings) y `aEscenario` está listo pero SIN usar; M6 conecta
+`aEscenario→calcular` en la ruta de éxito del botón Calcular y renderiza el
+`Resultado`. Pendientes de M6 que M5 dejó anotados: paleta completa de tokens +
+verificación de contraste AA + tema oscuro (`[data-theme]`) + fuentes self-hosted
+(Lexend/Inter) — hoy `tokens.css` solo tiene los semánticos del formulario con
+primitivas provisionales (incl. `--rojo-600` de error, sin fijar en docs/05).
+Las claves `frases.*`/`metricas.*` ya están sembradas (M4); faltan las de la
+tabla/estado vacío si M6 las necesita (docs/04 §4).
 
 ## Checklist canónica de módulos
 
@@ -28,7 +30,7 @@ en M4 (docs/07 no da su texto literal): nacen en M5/M6 desde `docs/04`.
       (`docs/02` §6), tipos compartidos core↔UI.
 - [x] **M4 · i18n base**: rutas `/es/` `/en/`, diccionarios, `formatMoney`,
       redirección de raíz (`docs/07`).
-- [ ] **M5 · UI formulario Básica**: layout, tabs (Avanzada/Experto visibles pero
+- [x] **M5 · UI formulario Básica**: layout, tabs (Avanzada/Experto visibles pero
       con contenido de Fase 2 oculto), pasos 1–4, validación inline (`docs/04`).
 - [ ] **M6 · UI resultados**: cifra grande + frase, torta, barras, tabla,
       animación firma, ejemplo precargado, temas claro/oscuro (`docs/04` §4, `docs/05`).
@@ -138,6 +140,27 @@ en M4 (docs/07 no da su texto literal): nacen en M5/M6 desde `docs/04`.
 - **M4 · FAQ**: en M4 solo los 5 títulos de pregunta (`faq.p1..p5`); las
   respuestas (80–120 palabras) se redactan en M7 (docs/07 §5).
 
+- **M5 · Botón Calcular solo valida** (confirmado con Jef): en M5 no llama a
+  `calcular` ni renderiza; en éxito limpia errores, en error hace scroll+focus al
+  primero. `aEscenario→calcular` + render son M6. Así el seam sigue la tabla de
+  ruteo (M5 lee `04` §1–3, no §4).
+- **M5 · `rangos` como fuente única** en `formulario.ts`: el esquema aplica los
+  límites y `mapearError` (`ui/esquema/mapear-error.ts`) los interpola en la
+  plantilla genérica `error.rango` (docs/07 §3). Cierra la deuda de M4. `duracion`
+  es especial (`{a:{1,50}, m:{1,600}}`); su mensaje se recalcula con la unidad
+  actual al renderizar, por eso el error se guarda como CLAVE del esquema, no como
+  texto ya traducido.
+- **M5 · Estado del formulario como strings crudos** en la isla: preservan lo
+  tecleado; el esquema Zod los normaliza. Validación al blur por campo; Calcular
+  valida todo. Arranca en defaults de docs/02 §6 (sin localStorage, docs/04 §3).
+- **M5 · Tokens mínimos** (confirmado con Jef): solo los semánticos del formulario
+  con primitivas provisionales de docs/05 §2 (incl. `--rojo-600` de error, que
+  docs/05 no fija). Paleta completa + contraste AA + tema oscuro + fuentes → M6.
+- **M5 · Un componente por archivo**: `Calculadora` (dueña del estado) orquesta
+  `Tabs` (WAI-ARIA, flechas/Home/End), `Campo`, `CampoDuracion`, `CampoFrecuencia`
+  (presentacionales puros). Los 3 tabs comparten los pasos 1–4; las secciones de
+  Fase 2 se añaden en M12–M13 (docs/04 §2).
+
 ## Trampas conocidas
 
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
@@ -176,12 +199,32 @@ en M4 (docs/07 no da su texto literal): nacen en M5/M6 desde `docs/04`.
   → espacio (ya lo hace `formatMoney.test.ts`). Mismo cuidado en e2e de M6.
 - El placeholder del copy lleva acentos (`{años}`): la interpolación de `t` usa
   `\{([^}]+)\}`, no `\w` (que excluye `ñ/á`). No volver a `\w`.
+- `mapearError` interpola min/max SIN formato de miles: `capitalInicial` da
+  "Ingresa un valor entre 0 y 100000000." La plantilla `error.rango` (docs/07 §3)
+  es genérica y estos límites son conteos, no dinero; si M6 quisiera separadores
+  habría que decidir formato (no usar `formatMoney`, que lleva `US$`).
 - El hook pre-commit corre `eslint .` sobre TODO el árbol, no solo lo staged: no
   se puede commitear en un orden que deje `src/layouts/` sin su elemento de
   boundaries (daría "unknown element"). Config de boundaries primero.
 
 ## Historial de sesiones
 
+- **2026-07-11 · Sesión 5 — M5 UI formulario Básica** ✅. Rama
+  `feature/modulo-05-ui-formulario` (6 commits granulares sobre `dev`). Tarea
+  estructural multi-archivo (no TDD de motor). Se expuso `rangos` como fuente única
+  en `formulario.ts` (refactor sin cambio de comportamiento: 98 tests de esquema
+  intactos) y se creó `mapearError` (+5 tests) que cierra la deuda de M4: claves
+  `errores.<campo>.<sufijo>` → plantilla `error.<sufijo>` con min/max, `duracion`
+  por unidad. Tokens del formulario en `tokens.css` (semánticos + `@theme inline`;
+  primitivas provisionales). Claves i18n nuevas en es+en (`pasos.*`,
+  `campos.duracion.unidad.*`, `campos.frecuencia.opciones.*`, `tabs.aria`). Isla
+  `Calculadora` reescrita: estado en strings, validación al blur, Calcular solo
+  valida (scroll+focus al primero); subcomponentes `Tabs` (WAI-ARIA), `Campo`,
+  `CampoDuracion`, `CampoFrecuencia`. 140 tests verdes (+5) + 12 e2e (+4:
+  defaults, tabs conservan valores, F4 error inline, F8 idioma). Revisión de diff
+  con subagente fresco contra docs/04 §1–3 y docs/05: sin bloqueantes; su única
+  nota (redacción de comentario) se verificó como ya correcta, no se tocó. Pendiente
+  humano: revisar en_US antes del 1.0.0 (heredado de M4).
 - **2026-07-11 · Sesión 4 — M4 i18n base** ✅. Rama
   `feature/modulo-04-i18n-base` sobre `dev`. Rutas estáticas `/es/` `/en/` con
   shell compartido `Base.astro`; raíz `pages/index.astro` redirige por
