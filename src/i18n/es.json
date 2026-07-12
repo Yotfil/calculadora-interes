@@ -159,5 +159,9 @@
     "p5": "¿Los resultados están garantizados?",
     "r5": "No. Los resultados son una proyección, no una promesa. Suponen una tasa de rentabilidad constante que tú eliges, pero los mercados reales suben y bajan, y ningún rendimiento pasado garantiza los futuros. Piensa en la cifra como un escenario ordenado para comparar decisiones —cuánto aportar, durante cuánto tiempo y con qué frecuencia—, no como el saldo exacto que tendrás. Tampoco consideramos impuestos, comisiones ni imprevistos personales. Esta herramienta es educativa y no constituye asesoría financiera: antes de invertir, ten en cuenta tu situación y, si lo necesitas, consulta a un profesional de confianza."
   },
+  "footer": {
+    "creadoPor": "Creado por Yotfil",
+    "derechos": "© {anio} Yotfil. Todos los derechos reservados."
+  },
   "descargo": "Esta calculadora es una herramienta educativa. Los resultados son proyecciones basadas en los supuestos que ingresas y no constituyen asesoría financiera ni garantía de rendimientos."
 }

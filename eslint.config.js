@@ -24,10 +24,17 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
 
-  // __APP_VERSION__ la inyecta Vite en build (define en astro.config.mjs).
+  // Constantes que Vite inyecta en build (define en astro.config.mjs).
   {
     files: ["**/*.astro", "src/**/*.{ts,tsx}"],
-    languageOptions: { globals: { __APP_VERSION__: "readonly" } },
+    languageOptions: {
+      globals: {
+        __APP_VERSION__: "readonly",
+        __COMMIT_HASH__: "readonly",
+        __COMMIT_DATE__: "readonly",
+        __BUILD_YEAR__: "readonly",
+      },
+    },
   },
 
   // Límites de arquitectura (docs/01 §4). Violación = error = commit bloqueado.
@@ -100,7 +107,14 @@ export default tseslint.config(
               allow: {
                 to: {
                   element: {
-                    types: ["layouts", "core", "ui", "i18n", "analytics", "styles"],
+                    types: [
+                      "layouts",
+                      "core",
+                      "ui",
+                      "i18n",
+                      "analytics",
+                      "styles",
+                    ],
                   },
                 },
               },
@@ -110,7 +124,14 @@ export default tseslint.config(
             {
               from: {
                 element: {
-                  types: ["ui", "i18n", "analytics", "pages", "layouts", "styles"],
+                  types: [
+                    "ui",
+                    "i18n",
+                    "analytics",
+                    "pages",
+                    "layouts",
+                    "styles",
+                  ],
                 },
               },
               allow: { to: { module: { origin: ["external", "core"] } } },

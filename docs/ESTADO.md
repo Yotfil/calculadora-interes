@@ -288,6 +288,18 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
 
 ## Historial de sesiones
 
+- **2026-07-12 · Extra (post-M7) — Branding de header/footer** ✅. Rama
+  `feature/header-footer-branding` (base `dev`). Tarea de UI NO planeada (pedido de
+  Jef sobre la marcha, fuera de la checklist). Header diferenciado con `bg-fondo` +
+  `border-b border-borde` y el favicon junto al título; footer con línea de build
+  (`versión · fecha · hash corto`, inyectados en `astro.config` vía git con fallback
+  a `COMMIT_REF`/Node y filtrado de segmentos vacíos), la nota `descargo`, y
+  copyright + "Creado por Yotfil" enlazando a https://www.yotfil.dev/ (`target=_blank`,
+  `rel=noopener noreferrer`). Constantes `__COMMIT_HASH__`/`__COMMIT_DATE__`/
+  `__BUILD_YEAR__` declaradas en `env.d.ts` y `eslint.config.js`. Claves i18n
+  `footer.creadoPor`/`footer.derechos` (es+en, paridad intacta). 142 unit + 34 e2e
+  (+4 branding). Verificación visual claro/oscuro con screenshots. Revisión de diff
+  con subagente fresco: sin bloqueantes; su NIT (línea "· ·" sin git) se blindó.
 - **2026-07-12 · Sesión 7 — M7 SEO + analítica** ✅. Rama
   `feature/modulo-07-seo-analitica` (8 commits granulares sobre `dev`). Tarea
   estructural multi-archivo (Plan Mode + confirmación de 3 decisiones con Jef:

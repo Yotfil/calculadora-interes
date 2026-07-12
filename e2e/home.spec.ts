@@ -79,3 +79,33 @@ test.describe("páginas localizadas", () => {
     );
   });
 });
+
+test.describe("header y footer (branding)", () => {
+  test("el header muestra el favicon junto al título", async ({ page }) => {
+    await page.goto("/es/");
+    await expect(page.locator('header img[src="/favicon.svg"]')).toBeVisible();
+  });
+
+  test("el footer muestra los metadatos de build (versión · fecha · commit)", async ({
+    page,
+  }) => {
+    await page.goto("/es/");
+    // Versión de package.json + separadores → confirma que hay fecha y hash extra.
+    await expect(page.getByTestId("version")).toContainText(`v${version}`);
+    await expect(page.getByTestId("version")).toContainText("·");
+  });
+
+  test("el footer conserva la nota (descargo)", async ({ page }) => {
+    await page.goto("/es/");
+    await expect(page.locator("footer")).toContainText("herramienta educativa");
+  });
+
+  test("el footer enlaza a yotfil.dev en pestaña nueva", async ({ page }) => {
+    await page.goto("/es/");
+    const enlace = page.locator('footer a[href="https://www.yotfil.dev/"]');
+    await expect(enlace).toBeVisible();
+    await expect(enlace).toContainText("Yotfil");
+    await expect(enlace).toHaveAttribute("target", "_blank");
+    await expect(enlace).toHaveAttribute("rel", /noopener/);
+  });
+});
