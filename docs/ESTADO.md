@@ -4,19 +4,20 @@
 
 ## Próximo paso
 
-Módulo 7 (SEO + analítica): `<title>`/meta description por idioma, hreflang
-recíproco + x-default → `/en/`, canonical, HTML semántico con copy educativo y
-FAQ (respuestas 80–120 palabras, docs/07 §5), schema.org (`WebApplication` +
-`FAQPage` JSON-LD), sitemap.xml + robots.txt, y GA4 con EXACTAMENTE 4 eventos
-detrás de `src/analytics/track` (no-op si `PUBLIC_GA4_ID` vacío). Leer
-`docs/06` §2–3 según la tabla de ruteo.
-**Base que deja M6 para M7:** el motor está cableado y la Básica calcula/renderiza
-completa; el evento GA4 `calcular` se dispara desde la ruta de éxito de
-`Calculadora.calcular` (`tab`, `con_impulso`, `con_proteccion`). `src/analytics/`
-sigue vacío (solo `.gitkeep`): M7 crea `track`. Pendientes humanos heredados:
-revisar el en_US antes del 1.0.0 y las respuestas de FAQ (solo títulos hoy).
-El presupuesto JS de la isla ya está en ~169 KB gzip (Recharts incluido; tope
-200 KB, docs/06 §3): vigilarlo al inyectar el snippet de GA4.
+Módulo 8 (Deploy + release 1.0.0): crear el sitio en Netlify conectado al repo
+(build `astro build`, publish `dist/`), **fijar el dominio real** —hoy placeholder
+`https://calculadora-interes.example` en DOS sitios: `site` de `astro.config.mjs`
+y la línea `Sitemap:` de `public/robots.txt`—, configurar `PUBLIC_GA4_ID` en las
+env vars de Netlify, y ejecutar el release (rama `release/1.0.0` desde dev con solo
+el bump `npm version minor --no-git-tag-version`, merge a dev, luego dev→main).
+Alta en Search Console tras el deploy y envío del sitemap. Leer `docs/01` §6.
+**Base que deja M7 para M8:** SEO on-page completo (description/canonical/hreflang
+recíproco + x-default→/en/ / JSON-LD `WebApplication`+`FAQPage` por idioma, FAQ
+indexable al pie, `sitemap-index.xml` + `robots.txt`, raíz con `noindex`). GA4
+tras `src/analytics/track` (no-op sin ID); SOLO el evento `calcular` cableado (los
+otros 3 esperan su feature: M16/M17/M18). Bundle isla 165,8 KB gzip < 200.
+Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
+1.0.0; definir aviso de cookies según la config de GA4.
 
 ## Checklist canónica de módulos
 
@@ -36,8 +37,8 @@ El presupuesto JS de la isla ya está en ~169 KB gzip (Recharts incluido; tope
 - [x] **M6 · UI resultados**: cifra grande + frase, torta, barras, tabla,
       animación firma, temas claro/oscuro (`docs/04` §4, `docs/05`). Ejemplo
       precargado (E1/F2) diferido a M12 (E1 usa impulso de Avanzada).
-- [ ] **M7 · SEO + analítica**: metas, hreflang, schema.org, GA4 (4 eventos),
-      sitemap (`docs/06`).
+- [x] **M7 · SEO + analítica**: metas, hreflang, schema.org, GA4 (`calcular`
+      cableado; los otros 3 con su feature), sitemap + robots (`docs/06`).
 - [ ] **M8 · Deploy**: Netlify + release 1.0.0.
 
 ### Fase 2 — Avanzada y Experto (release 1.1.0)
@@ -196,6 +197,32 @@ El presupuesto JS de la isla ya está en ~169 KB gzip (Recharts incluido; tope
   interes(interesTotal) = balanceFinal; barras acumuladas P+Σaportado+Σinteres =
   balance del año (`FilaAnual.aportado` NO incluye P, decisión de M2).
 
+- **M7 · `analytics` ya venía sembrado**: M1 dejó el elemento `analytics` en
+  boundaries (ui→analytics) y `PUBLIC_GA4_ID` en `env.d.ts`; M7 solo creó
+  `track.ts`. `no-restricted-globals` está acotado a `src/core/**`, así que
+  `track` usa `window.gtag` sin excepción extra. No hizo falta tocar la config.
+- **M7 · `track` con mapa de eventos tipado**: `track(evento, params)` sobre una
+  interfaz `Eventos` (los 4 nombres de docs/06 §2). No-op por retorno temprano si
+  `PUBLIC_GA4_ID` vacío, ANTES de tocar `window` (seguro en Node/tests). Solo
+  `calcular` se dispara en Fase 1; `con_impulso`/`con_proteccion` van `false`
+  fijos (sus secciones son M12/M13). `tab` se mapea basica/avanzada/experto→b/a/e.
+- **M7 · Sitemap con `@astrojs/sitemap`** (confirmado con Jef): i18n
+  `defaultLocale:'en'` (x-default→/en/), `filter` excluye la raíz `/`. El hreflang
+  recíproco del `<head>` lo emite `Seo.astro` (canonical self + es/en/x-default),
+  no el sitemap. `site` es PLACEHOLDER hasta M8, duplicado en config y robots.txt.
+- **M7 · Snippet gtag con rest params**: dentro de `define:vars` el bootstrap usa
+  `function(...args){ dataLayer.push(args) }` en vez de `arguments` (regla lint
+  `prefer-rest-params`); gtag.js consume las entradas de `dataLayer` por
+  índice/length, así que es equivalente. Solo se inyecta con ID presente.
+- **M7 · FAQ estática fuera de la isla**: `Faq.astro` (server-only, 0 JS) al pie
+  del shell. El copy educativo de campos YA se indexa porque Astro SSR-ea la isla
+  `client:load` (verificado en el HTML de build). Respuestas `faq.r1..r5` (80–120
+  palabras) redactadas en M7 (docs/07 §5), pendientes de revisión humana; R3 cita
+  el ahorro del ejemplo ("~40.000", ≈ K2 39.616,90 de docs/06 §1).
+- **M7 · Raíz `/` con `noindex`** (hallazgo de la revisión de cierre): el
+  redirector fino se excluye del sitemap y además lleva `<meta robots noindex>`
+  por si un crawler sin JS lo alcanza; SIN canonical para no mezclar señales.
+
 ## Trampas conocidas
 
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
@@ -251,10 +278,37 @@ El presupuesto JS de la isla ya está en ~169 KB gzip (Recharts incluido; tope
   un submit nativo solo serializaría el radio `duracionUnidad`. Por eso, si la
   isla no hidrata, el síntoma es una navegación GET a `?duracionUnidad=a`.
 - Recharts pesa: la isla quedó en ~169 KB gzip (tope 200 KB, docs/06 §3). Cada
-  añadido de Fase 2 debe medirse contra ese margen.
+  añadido de Fase 2 debe medirse contra ese margen. Tras M7 sigue en 165,8 KB
+  (gtag.js es script externo async, no entra al bundle; el wrapper `track` pesa
+  bytes).
+- `npm run format` (`prettier --write .`) reformatea TODO el árbol; en dev había
+  archivos no prettier-clean, así que ensució el diff de M7 con reflow ajeno
+  (core, esquema, tests). Se revirtieron con `git checkout dev -- <archivos>`.
+  Formatear SOLO los archivos tocados (`prettier --write <ruta>`), no todo el repo.
 
 ## Historial de sesiones
 
+- **2026-07-12 · Sesión 7 — M7 SEO + analítica** ✅. Rama
+  `feature/modulo-07-seo-analitica` (8 commits granulares sobre `dev`). Tarea
+  estructural multi-archivo (Plan Mode + confirmación de 3 decisiones con Jef:
+  `site` placeholder hasta M8, `@astrojs/sitemap`, redactar respuestas FAQ es+en).
+  Se creó el wrapper `src/analytics/track.ts` (no-op sin `PUBLIC_GA4_ID`, tipado
+  por evento) + 2 tests, y se cableó el evento `calcular` en la ruta de éxito de
+  `Calculadora.calcular` (la nota de M6 que lo daba por hecho era inexacta: no
+  existía). Head SEO en `Seo.astro` (description por idioma, canonical self,
+  hreflang recíproco es/en + x-default→/en/, JSON-LD `WebApplication`+`FAQPage`)
+  montado en `Base.astro`, snippet gtag condicional al ID, y `Faq.astro` (0 JS)
+  al pie. `@astrojs/sitemap` 3.7.3 (i18n x-default, raíz excluida) + `robots.txt`;
+  raíz con `noindex`. Claves i18n nuevas es+en (`seo.description`, `faq.titulo`,
+  `faq.r1..r5`, 80–120 palabras), paridad intacta. 142 tests unit (+2 track) +
+  28 e2e (+14: `e2e/seo.spec.ts`). Bundle isla 165,8 KB gzip < 200. Revisión de
+  diff con subagente fresco contra docs/06 §2–3 y docs/07 §5: sin bloqueantes;
+  verificó params del evento, no-op de `track`, hreflang recíproco, JSON-LD,
+  conteo de palabras FAQ y R3 con el dato de ahorro. Su único accionable (raíz
+  sin `noindex`) se aplicó + test e2e. Trampa nueva: `prettier --write .` ensució
+  el diff con reflow ajeno (revertido). Pendientes humanos: en_US, respuestas FAQ
+  y aviso de cookies antes del 1.0.0; `favicon.svg` apareció sin trackear (no lo
+  creó M7): queda fuera del PR, a decisión de Jef.
 - **2026-07-11 · Sesión 6 — M6 UI resultados Básica** ✅. Rama
   `feature/modulo-06-ui-resultados` (10 commits granulares sobre `dev`). Tarea
   estructural multi-archivo. Se cableó `aEscenario→calcular→Resultado` en la ruta

@@ -1,0 +1,52 @@
+---
+// Metadatos de indexación del <head> (docs/06 §3): description por idioma,
+// canonical absoluto, hreflang recíproco es/en + x-default→/en/, y JSON-LD
+// (WebApplication + FAQPage). Todo texto sale del diccionario (docs/07 §2).
+import type { Diccionario } from "../i18n/diccionario";
+import type { Locale } from "../i18n/locale";
+import { t } from "../i18n/t";
+
+interface Props {
+  locale: Locale;
+  dict: Diccionario;
+}
+
+const { locale, dict } = Astro.props;
+const descripcion = t(dict, "seo.description");
+
+// URLs absolutas desde `site` (astro.config). x-default → /en/ (mayor volumen).
+const url = (l: string) => new URL(`/${l}/`, Astro.site).href;
+const canonical = url(locale);
+
+// JSON-LD por idioma. Las 5 Q&A salen de faq.p1..p5 / faq.r1..r5 (docs/07 §5).
+const preguntas = [1, 2, 3, 4, 5].map((n) => ({
+  "@type": "Question",
+  name: t(dict, `faq.p${n}`),
+  acceptedAnswer: { "@type": "Answer", text: t(dict, `faq.r${n}`) },
+}));
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      name: t(dict, "titulo"),
+      description: descripcion,
+      url: canonical,
+      applicationCategory: "FinanceApplication",
+      operatingSystem: "Web",
+      inLanguage: locale,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    },
+    { "@type": "FAQPage", inLanguage: locale, mainEntity: preguntas },
+  ],
+};
+// Escapar `<` evita cualquier ruptura de </script> dentro de las respuestas.
+const jsonLdRaw = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+---
+
+<meta name="description" content={descripcion} />
+<link rel="canonical" href={canonical} />
+<link rel="alternate" hreflang="es" href={url("es")} />
+<link rel="alternate" hreflang="en" href={url("en")} />
+<link rel="alternate" hreflang="x-default" href={url("en")} />
+<script type="application/ld+json" set:html={jsonLdRaw} is:inline />

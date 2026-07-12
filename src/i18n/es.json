@@ -1,5 +1,8 @@
 {
   "titulo": "Calculadora de interés compuesto",
+  "seo": {
+    "description": "Calculadora de interés compuesto gratis: proyecta cuánto crecerá tu dinero con aportes mensuales y distintas frecuencias de capitalización."
+  },
   "idioma": {
     "es": "Español",
     "en": "English",
@@ -144,11 +147,17 @@
     "toggle": "Cambiar tema"
   },
   "faq": {
+    "titulo": "Preguntas frecuentes",
     "p1": "¿Qué es el interés compuesto?",
+    "r1": "El interés compuesto es el interés que gana, además de tu dinero, el interés que ya habías acumulado. Es \"interés sobre interés\". Imagina que inviertes 100 y en un año se convierten en 110: el segundo año no ganas intereses sobre 100, sino sobre 110, y así sucesivamente. Esa pequeña diferencia, repetida año tras año, hace que el crecimiento se acelere con el tiempo en lugar de avanzar en línea recta. Por eso el factor más poderoso no suele ser cuánto aportas, sino cuántos años dejas que el dinero siga componiéndose sin retirarlo.",
     "p2": "¿Qué significa la frecuencia de capitalización?",
+    "r2": "La frecuencia de capitalización indica cada cuánto el interés generado se suma a tu capital y empieza, a su vez, a generar más interés. Con capitalización anual, ese salto ocurre una vez al año; con capitalización mensual, doce veces. A igual tasa nominal, capitalizar con más frecuencia rinde algo más, porque el interés se reinvierte antes y trabaja durante más tiempo. La diferencia entre mensual y anual suele ser modesta, pero real, y crece cuando la tasa o el plazo son mayores. En esta calculadora puedes elegir la frecuencia y ver cómo cambia el resultado final.",
     "p3": "¿Por qué conviene aportar más los primeros años?",
+    "r3": "Cada aporte crece según el tiempo que pasa invertido, así que el dinero que entra temprano compone durante más años y termina pesando mucho más que el que llega al final. Concentrar un esfuerzo extra en los primeros años —lo que aquí llamamos \"impulso inicial\"— aprovecha justamente esa ventaja. En nuestro caso de ejemplo, adelantar aportes durante los primeros años alcanza el mismo resultado final aportando cerca de 40.000 dólares menos en total que un plan de aporte constante. No siempre es posible ahorrar más al principio, pero cuando lo es, el tiempo multiplica el efecto.",
     "p4": "¿Qué es la \"protección final\"?",
-    "p5": "¿Los resultados están garantizados?"
+    "r4": "La \"protección final\" reduce de forma gradual la rentabilidad esperada durante los últimos años de tu plan, en lugar de mantenerla alta hasta el último día. Es la idea detrás de muchos fondos de jubilación: a medida que se acerca la meta, se asume menos riesgo para proteger lo ya conseguido de una caída inoportuna. Esa prudencia tiene un costo visible: al esperar menos rentabilidad al final, el resultado proyectado baja un poco frente a no proteger nada. La calculadora te muestra ese costo en dinero, para que decidas con criterio cuánta tranquilidad quieres comprar.",
+    "p5": "¿Los resultados están garantizados?",
+    "r5": "No. Los resultados son una proyección, no una promesa. Suponen una tasa de rentabilidad constante que tú eliges, pero los mercados reales suben y bajan, y ningún rendimiento pasado garantiza los futuros. Piensa en la cifra como un escenario ordenado para comparar decisiones —cuánto aportar, durante cuánto tiempo y con qué frecuencia—, no como el saldo exacto que tendrás. Tampoco consideramos impuestos, comisiones ni imprevistos personales. Esta herramienta es educativa y no constituye asesoría financiera: antes de invertir, ten en cuenta tu situación y, si lo necesitas, consulta a un profesional de confianza."
   },
   "descargo": "Esta calculadora es una herramienta educativa. Los resultados son proyecciones basadas en los supuestos que ingresas y no constituyen asesoría financiera ni garantía de rendimientos."
 }

@@ -15,6 +15,13 @@ const dict = diccionarios.es;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{t(dict, "titulo")}</title>
+    {
+      /* Redirector fino: no debe indexarse (el contenido vive en /es/ y /en/,
+        cada una con su canonical self). Ya se excluye del sitemap; el noindex
+        cubre el caso de un crawler que lo alcance por un enlace externo
+        (docs/06 §3, docs/07 §1). */
+    }
+    <meta name="robots" content="noindex" />
     <script is:inline>
       // es* → /es/, resto → /en/. replace() no ensucia el historial; se conservan
       // query + hash para los enlaces compartidos (M18).
