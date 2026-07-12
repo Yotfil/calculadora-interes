@@ -5,28 +5,45 @@
  * Capa 2 — SEMÁNTICAS: lo único que consumen los componentes, vía clases
  * Tailwind. Los temas claro/oscuro (M6) redefinen SOLO esta capa.
  *
- * Los valores definitivos llegan con docs/05 (M5/M6); esto es el esqueleto.
+ * M5 añade los semánticos que usa el formulario con primitivas provisionales de
+ * docs/05 §2. La paleta completa, la verificación de contraste AA, el tema oscuro
+ * y las fuentes self-hosted se fijan en M6.
  */
 
-/* Capa 1 — primitivas */
+/* Capa 1 — primitivas (muestra de docs/05 §2; hex definitivos en M6) */
 :root {
-  --primitivo-gris-900: #111827; /* placeholder hasta docs/05 */
-  --primitivo-blanco: #ffffff; /* placeholder hasta docs/05 */
+  --primitivo-blanco: #ffffff;
+  --navy-900: #102a43;
+  --slate-100: #f0f4f8;
+  --slate-300: #bcccdc;
+  --slate-600: #486581;
+  --teal-600: #0e9888;
+  --rojo-600: #dc2626; /* provisional: docs/05 §2 no fija el rojo de error hasta M6 */
 }
 
 /* Capa 2 — semánticas */
 :root {
+  --sem-fondo: var(--slate-100);
   --sem-superficie: var(--primitivo-blanco);
-  --sem-texto: var(--primitivo-gris-900);
+  --sem-borde: var(--slate-300);
+  --sem-texto: var(--navy-900);
+  --sem-texto-suave: var(--slate-600);
+  --sem-accion: var(--teal-600); /* CTAs y foco (docs/05 §2) */
+  --sem-error: var(--rojo-600);
 }
 
 /*
  * Puente Tailwind v4: expone las semánticas como utilidades
- * (bg-superficie, text-texto, …). `inline` hace que la utilidad emita
- * var(--sem-*) resuelta en el punto de uso → el cambio de tema por
+ * (bg-superficie, text-texto, border-borde, …). `inline` hace que la utilidad
+ * emita var(--sem-*) resuelta en el punto de uso → el cambio de tema por
  * redefinición de --sem-* funciona sin recompilar.
  */
 @theme inline {
+  --color-fondo: var(--sem-fondo);
   --color-superficie: var(--sem-superficie);
+  --color-borde: var(--sem-borde);
   --color-texto: var(--sem-texto);
+  --color-texto-suave: var(--sem-texto-suave);
+  --color-accion: var(--sem-accion);
+  --color-error: var(--sem-error);
 }
