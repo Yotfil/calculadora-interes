@@ -6,7 +6,7 @@
 
 Módulo 4 (i18n base: rutas `/es/` `/en/`, diccionarios, `formatMoney`,
 redirección de raíz). Leer `docs/07` según la tabla de ruteo de CLAUDE.md.
-Antes: merge del PR de M3 (`feature/modulo-03-validacion-tipos` → `dev`).
+Sin pendientes previos: los PR de M1–M3 ya están mergeados a `dev`.
 
 ## Checklist canónica de módulos
 
@@ -142,7 +142,7 @@ Antes: merge del PR de M3 (`feature/modulo-03-validacion-tipos` → `dev`).
   `aEscenario`). zod 4.4.3. Revisión de diff con subagente fresco (probó 22
   bordes de coerción URL con node): sin bloqueantes ni accionables; sus 3
   notas se verificaron contra el código y quedaron como decisiones/trampas.
-  Pendiente humano: mergear PR a `dev`.
+  PR #3 mergeado a `dev`.
 - **2026-07-11 · Sesión 2 — M2 Motor núcleo** ✅. Rama
   `feature/modulo-02-motor-nucleo` (4 commits granulares sobre `dev`). TDD
   estricto: tests de tablas primero (rojo verificado), luego implementación.
@@ -150,7 +150,7 @@ Antes: merge del PR de M3 (`feature/modulo-03-validacion-tipos` → `dev`).
   (677 839,48), filas anuales (parcial marcada, cuadre con totales), bordes.
   Revisión de diff con subagente fresco: sin bloqueantes; su nota accionable
   (superficie pública extra en el barrel) se aplicó; las otras dos quedaron
-  anotadas como decisión/trampa. Pendiente humano: mergear PR a `dev`.
+  anotadas como decisión/trampa. PR #2 mergeado a `dev`.
 - **2026-07-11 · Sesión 1 — M1 Setup** ✅. Rama `feature/modulo-01-setup`
   (12 commits granulares sobre `dev`). Scaffold manual (no `npm create astro`:
   pisaba README.md). Build + Vitest (1/1) + Playwright e2e (2/2, chromium,
