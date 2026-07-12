@@ -288,6 +288,19 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
 
 ## Historial de sesiones
 
+- **2026-07-12 · Extra (post-M7) — Ajustes de UI (Snowball, anchos, FAQ colapsable)** ✅.
+  Rama `feature/ui-header-footer-faq` (base `dev`). Tarea de UI NO planeada (pedido de Jef
+  antes del deploy). App renombrada a "Snowball: …" (clave `titulo` es+en; se propaga a
+  `<title>`, header, JSON-LD, aria-label e `index.astro`). Header y footer: barra full-width
+  con el contenido acotado a `max-w-6xl` (el ancho del contenido, `Calculadora.tsx`) para
+  alinear; footer reordenado con `descargo` primero (`text-sm`) y versión/copyright sutiles
+  (`text-xs font-light`) al final, conservando `data-testid="version"` y el enlace a
+  yotfil.dev. FAQ reescrita: caja de tono diferenciado (`bg-fondo` + borde + rounded) con
+  cada pregunta en `<details>` colapsable nativo (chevron `group-open:rotate-180`, marcador
+  nativo oculto), colapsados por defecto → ocupa menos espacio; sigue indexable y el JSON-LD
+  FAQPage no cambia. Tests de FAQ migrados a `summary`/`details > p` + test de colapso.
+  142 unit + 36 e2e. Verificación visual claro/oscuro a 1600px. Revisión de diff con
+  subagente fresco: sin bloqueantes.
 - **2026-07-12 · Extra (post-M7) — Branding de header/footer** ✅. Rama
   `feature/header-footer-branding` (base `dev`). Tarea de UI NO planeada (pedido de
   Jef sobre la marcha, fuera de la checklist). Header diferenciado con `bg-fondo` +
