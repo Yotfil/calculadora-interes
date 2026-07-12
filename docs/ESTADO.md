@@ -256,7 +256,7 @@ El presupuesto JS de la isla ya está en ~169 KB gzip (Recharts incluido; tope
 ## Historial de sesiones
 
 - **2026-07-11 · Sesión 6 — M6 UI resultados Básica** ✅. Rama
-  `feature/modulo-06-ui-resultados` (9 commits granulares sobre `dev`). Tarea
+  `feature/modulo-06-ui-resultados` (10 commits granulares sobre `dev`). Tarea
   estructural multi-archivo. Se cableó `aEscenario→calcular→Resultado` en la ruta
   de éxito del botón (con errores sigue el scroll+focus de M5, sin calcular) y se
   reorganizó la isla a layout de dos columnas (form / resultados fijos en desktop;
@@ -276,8 +276,8 @@ El presupuesto JS de la isla ya está en ~169 KB gzip (Recharts incluido; tope
   NITs accionables se aplicaron (campo `color` muerto en `series.ts`;
   `aria-label` del landmark de resultados con clave propia `resultados.titulo`);
   el 3.º (`vacio.cta` huérfana) es intencional (diferido a M12). Verificación
-  visual en claro/oscuro/mobile-en con screenshots. Pendientes humanos: en_US y
-  respuestas de FAQ antes del 1.0.0.
+  visual en claro/oscuro/mobile-en con screenshots. PR #6 mergeado a `dev`.
+  Pendientes humanos: en_US y respuestas de FAQ antes del 1.0.0.
 - **2026-07-11 · Sesión 5 — M5 UI formulario Básica** ✅. Rama
   `feature/modulo-05-ui-formulario` (6 commits granulares sobre `dev`). Tarea
   estructural multi-archivo (no TDD de motor). Se expuso `rangos` como fuente única
