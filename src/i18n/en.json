@@ -6,9 +6,16 @@
     "selector": "Change language"
   },
   "tabs": {
+    "aria": "Calculator level",
     "basica": "Basic",
     "avanzada": "Advanced",
     "experto": "Expert"
+  },
+  "pasos": {
+    "paso1": "Step 1 · Initial capital",
+    "paso2": "Step 2 · Contributions",
+    "paso3": "Step 3 · Time",
+    "paso4": "Step 4 · Return"
   },
   "campos": {
     "capitalInicial": {
@@ -21,7 +28,11 @@
     },
     "duracion": {
       "label": "Investment horizon",
-      "ayuda": "How many years (or months) will you let the money grow?"
+      "ayuda": "How many years (or months) will you let the money grow?",
+      "unidad": {
+        "anios": "Years",
+        "meses": "Months"
+      }
     },
     "tasa": {
       "label": "Estimated annual return",
@@ -29,7 +40,13 @@
     },
     "frecuencia": {
       "label": "Compounding frequency",
-      "ayuda": "How often the interest is added to the principal and starts earning more interest."
+      "ayuda": "How often the interest is added to the principal and starts earning more interest.",
+      "opciones": {
+        "anual": "Annual",
+        "semestral": "Semiannual",
+        "trimestral": "Quarterly",
+        "mensual": "Monthly"
+      }
     },
     "impulso": {
       "titulo": "Early boost (optional)",
