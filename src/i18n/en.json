@@ -159,5 +159,9 @@
     "p5": "Are the results guaranteed?",
     "r5": "No. The results are a projection, not a promise. They assume a constant rate of return that you choose, but real markets rise and fall, and no past performance guarantees future returns. Think of the figure as an orderly scenario for comparing decisions —how much to contribute, for how long, and how often—, not as the exact balance you'll have. We also don't account for taxes, fees or personal surprises. This tool is educational and does not constitute financial advice: before investing, consider your own situation and, if you need to, consult a professional you trust."
   },
+  "footer": {
+    "creadoPor": "Created by Yotfil",
+    "derechos": "© {anio} Yotfil. All rights reserved."
+  },
   "descargo": "This calculator is an educational tool. The results are projections based on the assumptions you enter and do not constitute financial advice or a guarantee of returns."
 }
