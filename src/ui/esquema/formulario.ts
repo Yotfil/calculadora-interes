@@ -20,8 +20,32 @@ function aNumero(valor: unknown): unknown {
   return valor;
 }
 
-/** Número en [min, max] con claves de error `errores.<campo>.*`. */
-function numeroEnRango(campo: string, min: number, max: number) {
+/**
+ * Rango [min, max] por campo numérico. Fuente ÚNICA: el esquema los aplica y la
+ * UI (`mapearError`) los interpola en la plantilla genérica `error.rango`
+ * (docs/07 §3). Duplicar los límites como texto sería deriva (ESTADO, M4).
+ * `duracion` es especial: su máximo depende de la unidad (docs/02 §6).
+ */
+export const rangos = {
+  capitalInicial: { min: 0, max: 100_000_000 },
+  aporteRegimen: { min: 0, max: 1_000_000 },
+  aporteImpulso: { min: 0, max: 1_000_000 },
+  tasaNominalAnual: { min: 0, max: 100 },
+  tasaReducida: { min: 0, max: 100 },
+  varianza: { min: 0, max: 20 },
+  inflacionAnual: { min: 0, max: 20 },
+  meta: { min: 1, max: 1_000_000_000 },
+  aniosImpulso: { min: 1, max: 5 },
+  aniosProteccion: { min: 1, max: 5 },
+  duracion: { a: { min: 1, max: 50 }, m: { min: 1, max: 600 } },
+} as const;
+
+/** Campos con un rango plano `{min,max}` (todos menos `duracion`). */
+type CampoRango = Exclude<keyof typeof rangos, "duracion">;
+
+/** Número en el rango de `rangos[campo]` con claves de error `errores.<campo>.*`. */
+function numeroEnRango(campo: CampoRango) {
+  const { min, max } = rangos[campo];
   return z
     .number({ error: `errores.${campo}.numero` })
     .min(min, `errores.${campo}.rango`)
@@ -40,16 +64,10 @@ export const esquemaFormulario = z
   .object({
     capitalInicial: z.preprocess(
       aNumero,
-      numeroEnRango("capitalInicial", 0, 100_000_000).default(1_000),
+      numeroEnRango("capitalInicial").default(1_000),
     ),
-    aporteRegimen: z.preprocess(
-      aNumero,
-      numeroEnRango("aporteRegimen", 0, 1_000_000).default(100),
-    ),
-    aporteImpulso: z.preprocess(
-      aNumero,
-      numeroEnRango("aporteImpulso", 0, 1_000_000).optional(),
-    ),
+    aporteRegimen: z.preprocess(aNumero, numeroEnRango("aporteRegimen").default(100)),
+    aporteImpulso: z.preprocess(aNumero, numeroEnRango("aporteImpulso").optional()),
     // El rango de la duración depende de la unidad; el máximo se valida en el
     // superRefine de abajo. Default: 10 años (docs/02 §6).
     duracion: z.preprocess(
@@ -57,25 +75,25 @@ export const esquemaFormulario = z
       z
         .number({ error: "errores.duracion.numero" })
         .int("errores.duracion.entero")
-        .min(1, "errores.duracion.rango")
+        .min(rangos.duracion.a.min, "errores.duracion.rango")
         .default(10),
     ),
     duracionUnidad: z.enum(["a", "m"]).catch("a").default("a"),
     tasaNominalAnual: z.preprocess(
       aNumero,
-      numeroEnRango("tasaNominalAnual", 0, 100).default(8),
+      numeroEnRango("tasaNominalAnual").default(8),
     ),
-    tasaReducida: z.preprocess(aNumero, numeroEnRango("tasaReducida", 0, 100).optional()),
+    tasaReducida: z.preprocess(aNumero, numeroEnRango("tasaReducida").optional()),
     // Único campo cuyo fuera-de-rango NO es error: cae al default (docs/02 §6).
     frecuencia: z.preprocess(aNumero, z.literal([1, 2, 4, 12]).catch(12).default(12)),
     aniosImpulso: aniosDeSeccion("aniosImpulso"),
     aniosProteccion: aniosDeSeccion("aniosProteccion"),
-    varianza: z.preprocess(aNumero, numeroEnRango("varianza", 0, 20).optional()),
-    inflacionAnual: z.preprocess(aNumero, numeroEnRango("inflacionAnual", 0, 20).default(3)),
-    meta: z.preprocess(aNumero, numeroEnRango("meta", 1, 1_000_000_000).optional()),
+    varianza: z.preprocess(aNumero, numeroEnRango("varianza").optional()),
+    inflacionAnual: z.preprocess(aNumero, numeroEnRango("inflacionAnual").default(3)),
+    meta: z.preprocess(aNumero, numeroEnRango("meta").optional()),
   })
   .superRefine((valores, ctx) => {
-    const maximo = valores.duracionUnidad === "a" ? 50 : 600;
+    const maximo = rangos.duracion[valores.duracionUnidad].max;
     if (valores.duracion > maximo) {
       ctx.addIssue({
         code: "custom",
