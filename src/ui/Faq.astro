@@ -1,0 +1,49 @@
+---
+// Sección de preguntas frecuentes al pie, en una caja de tono diferenciado (otro
+// nivel) y con cada pregunta en un colapsable <details> nativo (cero JS, accesible
+// por teclado). Colapsados por defecto para ocupar menos espacio. El texto sigue
+// en el HTML estático → indexable (docs/06 §3); el JSON-LD FAQPage lo emite
+// Seo.astro. El texto sale del diccionario (docs/07 §5).
+import type { Diccionario } from "../i18n/diccionario";
+import { t } from "../i18n/t";
+
+interface Props {
+  dict: Diccionario;
+}
+
+const { dict } = Astro.props;
+const preguntas = [1, 2, 3, 4, 5];
+---
+
+<section
+  aria-labelledby="faq-titulo"
+  class="mx-auto max-w-6xl px-4 py-8 text-texto"
+>
+  <div class="rounded-lg border border-borde bg-fondo p-6">
+    <h2 id="faq-titulo" class="font-display text-xl font-semibold">
+      {t(dict, "faq.titulo")}
+    </h2>
+    <div class="mt-4 divide-y divide-borde">
+      {
+        preguntas.map((n) => (
+          <details class="group py-3">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded font-display font-semibold focus-visible:outline-2 focus-visible:outline-accion [&::-webkit-details-marker]:hidden">
+              {t(dict, `faq.p${n}`)}
+              <svg
+                class="size-4 shrink-0 text-texto-suave transition-transform group-open:rotate-180"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </summary>
+            <p class="mt-2 text-texto-suave">{t(dict, `faq.r${n}`)}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>

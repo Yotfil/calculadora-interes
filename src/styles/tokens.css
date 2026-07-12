@@ -1,0 +1,117 @@
+/*
+ * Única fuente de tokens (docs/01 §3, docs/05).
+ *
+ * Capa 1 — PRIMITIVAS: valores crudos. Solo la capa 2 puede consumirlas.
+ * Capa 2 — SEMÁNTICAS: lo único que consumen los componentes, vía clases
+ * Tailwind. Los temas claro/oscuro son DOS mapeos de los MISMOS semánticos
+ * (docs/05 §2): el oscuro redefine solo esta capa.
+ *
+ * Contraste AA verificado en ambos temas (docs/05 §5): texto/superficie y
+ * texto/fondo ≥ 4,5; label del botón sobre `accion` ≥ 4,5; colores de
+ * componente (inicial/aportes/interes) ≥ 3 sobre superficie (WCAG 1.4.11,
+ * objeto gráfico). Los hex del tema claro que bajaban de umbral se oscurecieron
+ * respecto a la muestra de docs/05 §2 (amber y verde) para cumplirlo.
+ */
+
+/* Capa 1 — primitivas (paleta definitiva, docs/05 §2) */
+:root {
+  --primitivo-blanco: #ffffff;
+  --navy-950: #0a1826;
+  --navy-900: #102a43;
+  --navy-700: #243b53;
+  --slate-100: #f0f4f8;
+  --slate-300: #bcccdc;
+  --slate-400: #9fb3c8;
+  --slate-600: #486581;
+  --teal-700: #0b7c70;
+  --teal-600: #0e9888;
+  --teal-500: #14b8a6;
+  --teal-300: #7edcd2;
+  --indigo-500: #6366f1;
+  --indigo-300: #a5b4fc;
+  --amber-600: #d97706;
+  --amber-300: #fcd34d;
+  --rojo-600: #dc2626;
+  --rojo-400: #f87171;
+  --verde-700: #15803d;
+  --verde-400: #4ade80;
+
+  /* Familias tipográficas self-hosted (docs/05 §3): Lexend para display/cifras,
+     Inter para cuerpo/UI. Los @font-face viven en fonts.css. */
+  --fuente-cuerpo: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --fuente-display: "Lexend", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Capa 2 — semánticas · TEMA CLARO (default) */
+:root {
+  --sem-fondo: var(--slate-100);
+  --sem-superficie: var(--primitivo-blanco);
+  --sem-borde: var(--slate-300);
+  --sem-texto: var(--navy-900);
+  --sem-texto-suave: var(--slate-600);
+  --sem-accion: var(--teal-700); /* CTAs y foco (docs/05 §2) */
+  --sem-inicial: var(--indigo-500); /* torta/barras/tabla: capital inicial */
+  --sem-aportes: var(--amber-600); /* torta/barras/tabla: aportes */
+  --sem-interes: var(--teal-600); /* torta/barras/tabla: interés (familia teal) */
+  --sem-error: var(--rojo-600);
+  --sem-exito: var(--verde-700);
+}
+
+/*
+ * TEMA OSCURO — mismo juego de semánticos, otro mapeo. Se aplica de dos formas:
+ *  - Explícito: [data-theme="dark"] (lo fija el toggle / script anti-FOUC).
+ *  - Fallback sin JS: prefers-color-scheme, salvo que el usuario haya forzado
+ *    claro con [data-theme="light"].
+ */
+[data-theme="dark"] {
+  --sem-fondo: var(--navy-950);
+  --sem-superficie: var(--navy-900);
+  --sem-borde: var(--navy-700);
+  --sem-texto: var(--slate-100);
+  --sem-texto-suave: var(--slate-400);
+  --sem-accion: var(--teal-500);
+  --sem-inicial: var(--indigo-300);
+  --sem-aportes: var(--amber-300);
+  --sem-interes: var(--teal-300);
+  --sem-error: var(--rojo-400);
+  --sem-exito: var(--verde-400);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sem-fondo: var(--navy-950);
+    --sem-superficie: var(--navy-900);
+    --sem-borde: var(--navy-700);
+    --sem-texto: var(--slate-100);
+    --sem-texto-suave: var(--slate-400);
+    --sem-accion: var(--teal-500);
+    --sem-inicial: var(--indigo-300);
+    --sem-aportes: var(--amber-300);
+    --sem-interes: var(--teal-300);
+    --sem-error: var(--rojo-400);
+    --sem-exito: var(--verde-400);
+  }
+}
+
+/*
+ * Puente Tailwind v4: expone las semánticas como utilidades
+ * (bg-superficie, text-texto, border-borde, text-interes, font-display, …).
+ * `inline` hace que la utilidad emita var(--sem-*) resuelta en el punto de uso
+ * → el cambio de tema por redefinición de --sem-* funciona sin recompilar.
+ */
+@theme inline {
+  --color-fondo: var(--sem-fondo);
+  --color-superficie: var(--sem-superficie);
+  --color-borde: var(--sem-borde);
+  --color-texto: var(--sem-texto);
+  --color-texto-suave: var(--sem-texto-suave);
+  --color-accion: var(--sem-accion);
+  --color-inicial: var(--sem-inicial);
+  --color-aportes: var(--sem-aportes);
+  --color-interes: var(--sem-interes);
+  --color-error: var(--sem-error);
+  --color-exito: var(--sem-exito);
+
+  --font-cuerpo: var(--fuente-cuerpo);
+  --font-display: var(--fuente-display);
+}

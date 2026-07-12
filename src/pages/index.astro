@@ -1,0 +1,37 @@
+---
+// Raíz: redirección en cliente por navigator.language (docs/07 §1); x-default → /en/.
+// No monta la isla ni el shell completo — es un redirector que se abandona al instante.
+// Los enlaces visibles son el fallback sin JS. Endónimos vía diccionario (iguales en
+// ambos idiomas), para no hardcodear strings.
+import { diccionarios } from "../i18n/diccionario";
+import { t } from "../i18n/t";
+
+const dict = diccionarios.es;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{t(dict, "titulo")}</title>
+    {
+      /* Redirector fino: no debe indexarse (el contenido vive en /es/ y /en/,
+        cada una con su canonical self). Ya se excluye del sitemap; el noindex
+        cubre el caso de un crawler que lo alcance por un enlace externo
+        (docs/06 §3, docs/07 §1). */
+    }
+    <meta name="robots" content="noindex" />
+    <script is:inline>
+      // es* → /es/, resto → /en/. replace() no ensucia el historial; se conservan
+      // query + hash para los enlaces compartidos (M18).
+      const lang = navigator.language || "";
+      const destino = /^es\b/i.test(lang) ? "/es/" : "/en/";
+      location.replace(destino + location.search + location.hash);
+    </script>
+  </head>
+  <body>
+    <a href="/es/">{t(dict, "idioma.es")}</a>
+    <a href="/en/">{t(dict, "idioma.en")}</a>
+  </body>
+</html>

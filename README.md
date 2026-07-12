@@ -7,18 +7,18 @@ Este repositorio de documentos es el **contrato** entre el diseño de producto
 
 ## Índice
 
-| Documento | Contenido |
-|---|---|
-| `CLAUDE.md` | Reglas de trabajo para Claude Code (liviano, se carga cada sesión) |
-| `docs/ESTADO.md` | Bitácora viva: checklist canónica de módulos, decisiones sobre la marcha, trampas, próximo paso |
-| `docs/00-vision-y-fases.md` | Qué es el producto, para quién, fases de entrega |
-| `docs/01-arquitectura-y-stack.md` | Stack, estructura de carpetas, reglas de límites, testing |
-| `docs/02-motor-de-calculo.md` | El motor: fórmulas, escalonado, glide path, rangos, tablas de casos |
-| `docs/03-modo-meta-e-inflacion.md` | Despeje del aporte, deflactación, casos especiales |
-| `docs/04-pantallas-y-navegacion.md` | Tabs, pasos, resultados, URL compartible, estados |
-| `docs/05-diseno-visual-y-tokens.md` | Identidad, tokens en dos capas, temas, animación firma, accesibilidad |
-| `docs/06-metricas-y-analitica.md` | Métricas para el usuario (fórmulas) y del producto (GA4, Search Console, SEO) |
-| `docs/07-i18n-y-contenido.md` | Rutas por idioma, diccionarios, copy canónico en español |
+| Documento                           | Contenido                                                                                       |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `CLAUDE.md`                         | Reglas de trabajo para Claude Code (liviano, se carga cada sesión)                              |
+| `docs/ESTADO.md`                    | Bitácora viva: checklist canónica de módulos, decisiones sobre la marcha, trampas, próximo paso |
+| `docs/00-vision-y-fases.md`         | Qué es el producto, para quién, fases de entrega                                                |
+| `docs/01-arquitectura-y-stack.md`   | Stack, estructura de carpetas, reglas de límites, testing                                       |
+| `docs/02-motor-de-calculo.md`       | El motor: fórmulas, escalonado, glide path, rangos, tablas de casos                             |
+| `docs/03-modo-meta-e-inflacion.md`  | Despeje del aporte, deflactación, casos especiales                                              |
+| `docs/04-pantallas-y-navegacion.md` | Tabs, pasos, resultados, URL compartible, estados                                               |
+| `docs/05-diseno-visual-y-tokens.md` | Identidad, tokens en dos capas, temas, animación firma, accesibilidad                           |
+| `docs/06-metricas-y-analitica.md`   | Métricas para el usuario (fórmulas) y del producto (GA4, Search Console, SEO)                   |
+| `docs/07-i18n-y-contenido.md`       | Rutas por idioma, diccionarios, copy canónico en español                                        |
 
 ## Decisiones ya tomadas (NO re-abrir)
 
@@ -54,9 +54,16 @@ autocontenido) · cero costo de infraestructura.
 
 - [ ] Crear propiedad GA4 y obtener el ID de medición (va en `.env`, ver `docs/06`).
 - [ ] Alta del sitio en Google Search Console tras el primer deploy.
-- [ ] Crear el sitio en Netlify y conectar el repo (deploy de `main`).
-- [ ] Decidir dominio definitivo (afecta hreflang y canonical, ver `docs/06`).
+- [ ] Crear el sitio en Netlify y conectar el repo (deploy de `main`); el build lo
+      configura `netlify.toml` versionado (`astro build` → `dist`, Node 22).
+- [x] Dominio definitivo (M8): `https://helenguevara.com`, fijado en `site` de
+      `astro.config.mjs`, la línea `Sitemap:` de `public/robots.txt` y la constante
+      `SITE` del e2e de SEO. Alimenta hreflang, canonical y sitemap.
 - [ ] Revisión humana de la traducción `en.json` antes del release 1.0.0.
+- [ ] Revisión humana de las 5 respuestas de FAQ (`faq.r1`–`faq.r5`, es + en) antes
+      del release 1.0.0 (redactadas en M7 siguiendo `docs/07` §5).
+- [ ] Definir aviso de cookies/consentimiento según lo exija la configuración de GA4
+      (`docs/06` §2); GA4 solo se activa si `PUBLIC_GA4_ID` está presente.
 
 ## Arranque con Claude Code (handoff)
 

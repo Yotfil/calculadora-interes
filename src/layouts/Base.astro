@@ -1,0 +1,211 @@
+---
+// Shell HTML compartido por /es/ y /en/ (docs/07 §1). Single-source del head,
+// header con selector de idioma, footer con descargo + versión, y montaje de la
+// isla. Todo texto visible sale del diccionario (docs/07 §2): cero strings aquí.
+import type { Diccionario } from "../i18n/diccionario";
+import type { Locale } from "../i18n/locale";
+import { t } from "../i18n/t";
+import Calculadora from "../ui/Calculadora";
+import Faq from "../ui/Faq.astro";
+import Seo from "./Seo.astro";
+import "../styles/global.css";
+
+interface Props {
+  locale: Locale;
+  dict: Diccionario;
+}
+
+const { locale, dict } = Astro.props;
+const otro: Locale = locale === "es" ? "en" : "es";
+const titulo = t(dict, "titulo");
+
+// GA4 solo si hay ID (docs/06 §2): sin ID no se inyecta el snippet, así que
+// `window.gtag` no existe y `track` es no-op en dev/tests.
+const ga4 = import.meta.env.PUBLIC_GA4_ID;
+
+// Línea de build del footer: versión · fecha · hash. Se filtran los segmentos
+// vacíos (build sin git) para no dejar separadores huérfanos ("· ·").
+const buildInfo = [`v${__APP_VERSION__}`, __COMMIT_DATE__, __COMMIT_HASH__]
+  .filter(Boolean)
+  .join(" · ");
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{titulo}</title>
+    <Seo locale={locale} dict={dict} />
+    {
+      ga4 && (
+        <Fragment>
+          <script
+            is:inline
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${ga4}`}
+          />
+          <script is:inline define:vars={{ ga4 }}>
+            // Bootstrap gtag.js. `track` (src/analytics) llama window.gtag; aquí
+            // se define y encola el arranque. Rest params en vez de `arguments`:
+            // gtag.js consume cada entrada de dataLayer por índice/length.
+            window.dataLayer = window.dataLayer || []; window.gtag = function
+            (...args) { window.dataLayer.push(args); }; window.gtag("js", new
+            Date()); window.gtag("config", ga4);
+          </script>
+        </Fragment>
+      )
+    }
+    <link
+      rel="preload"
+      href="/fonts/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/lexend-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script is:inline>
+      // Anti-FOUC (docs/05 §2): fija el tema antes del primer paint. Prioridad
+      // elección manual (localStorage) > preferencia del sistema. El tema NO es
+      // estado de formulario, así que persistirlo no viola docs/04 §3.
+      (function () {
+        try {
+          const guardado = localStorage.getItem("tema");
+          const oscuro =
+            guardado === "dark" ||
+            (guardado === null &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = oscuro ? "dark" : "light";
+        } catch {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+  </head>
+  <body class="bg-superficie font-cuerpo text-texto">
+    <header class="border-b border-borde bg-fondo">
+      <div
+        class="mx-auto flex max-w-6xl items-center justify-between gap-4 p-4"
+      >
+      <a
+        href={`/${locale}/`}
+        class="flex items-center gap-2 font-display font-semibold"
+      >
+        <img src="/favicon.svg" alt="" width="28" height="28" class="size-7" />
+        {titulo}
+      </a>
+      <div class="flex items-center gap-4">
+        <button
+          id="toggle-tema"
+          data-testid="toggle-tema"
+          type="button"
+          aria-label={t(dict, "tema.toggle")}
+          class="rounded p-1 text-texto-suave focus-visible:outline-2 focus-visible:outline-accion"
+        >
+          {/* Iconos decorativos; el CSS muestra el que corresponde al tema:
+              luna en claro (ir a oscuro), sol en oscuro (ir a claro). */}
+          <svg
+            class="icono-luna size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path>
+          </svg>
+          <svg
+            class="icono-sol size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="4"></circle>
+            <path
+              d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"
+            ></path>
+          </svg>
+        </button>
+        <a
+          id="selector-idioma"
+          data-testid="selector-idioma"
+          href={`/${otro}/`}
+          hreflang={otro}
+          aria-label={t(dict, "idioma.selector")}>{t(dict, `idioma.${otro}`)}</a
+        >
+      </div>
+      </div>
+    </header>
+    <main>
+      <Calculadora client:load locale={locale} dict={dict} />
+    </main>
+    <slot />
+    <Faq dict={dict} />
+    <footer class="mt-8 border-t border-borde bg-fondo">
+      <div
+        class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 text-texto-suave"
+      >
+        <p class="text-sm">{t(dict, "descargo")}</p>
+        {/* Versión y copyright: metadatos secundarios, al final y en tono menor
+            (docs/01 §6). Los build vars los inyecta Vite; separadores de puntería. */}
+        <div class="flex flex-col gap-1 text-xs font-light">
+          <span data-testid="version">{buildInfo}</span>
+          <p>
+            {t(dict, "footer.derechos", { anio: __BUILD_YEAR__ })} ·{" "}
+            <a
+              href="https://www.yotfil.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="rounded font-normal text-accion underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-accion"
+              >{t(dict, "footer.creadoPor")}</a
+            >
+          </p>
+        </div>
+      </div>
+    </footer>
+    <script is:inline>
+      // El selector conserva query + hash al cambiar de idioma (docs/07 §1).
+      const sel = document.getElementById("selector-idioma");
+      if (sel)
+        sel.setAttribute(
+          "href",
+          sel.getAttribute("href") + location.search + location.hash,
+        );
+
+      // Toggle de tema: alterna data-theme y persiste la elección manual.
+      const toggle = document.getElementById("toggle-tema");
+      if (toggle)
+        toggle.addEventListener("click", () => {
+          const oscuro = document.documentElement.dataset.theme === "dark";
+          const nuevo = oscuro ? "light" : "dark";
+          document.documentElement.dataset.theme = nuevo;
+          try {
+            localStorage.setItem("tema", nuevo);
+          } catch {
+            /* sin persistencia si el storage no está disponible */
+          }
+        });
+    </script>
+    <style is:global>
+      /* Muestra el icono del tema activo (luna en claro, sol en oscuro). */
+      .icono-sol {
+        display: none;
+      }
+      [data-theme="dark"] .icono-luna {
+        display: none;
+      }
+      [data-theme="dark"] .icono-sol {
+        display: block;
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+---
+// Ruta estática en inglés (docs/07 §1). El shell vive en Base.astro; aquí solo
+// se elige el diccionario del locale.
+import { diccionarios } from "../../i18n/diccionario";
+import Base from "../../layouts/Base.astro";
+---
+
+<Base locale="en" dict={diccionarios.en} />

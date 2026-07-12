@@ -1,0 +1,167 @@
+{
+  "titulo": "Snowball: Calculadora de interés compuesto",
+  "seo": {
+    "description": "Calculadora de interés compuesto gratis: proyecta cuánto crecerá tu dinero con aportes mensuales y distintas frecuencias de capitalización."
+  },
+  "idioma": {
+    "es": "Español",
+    "en": "English",
+    "selector": "Cambiar idioma"
+  },
+  "tabs": {
+    "aria": "Nivel de la calculadora",
+    "basica": "Básica",
+    "avanzada": "Avanzada",
+    "experto": "Experto"
+  },
+  "pasos": {
+    "paso1": "Paso 1 · Capital inicial",
+    "paso2": "Paso 2 · Aportes",
+    "paso3": "Paso 3 · Tiempo",
+    "paso4": "Paso 4 · Rentabilidad"
+  },
+  "campos": {
+    "capitalInicial": {
+      "label": "Capital inicial",
+      "ayuda": "El dinero con el que empiezas hoy. Puede ser 0."
+    },
+    "aporteRegimen": {
+      "label": "Aporte mensual",
+      "ayuda": "Lo que agregas cada mes. Se abona al final de cada mes."
+    },
+    "duracion": {
+      "label": "Tiempo de inversión",
+      "ayuda": "¿Cuántos años (o meses) dejarás crecer el dinero?",
+      "unidad": {
+        "anios": "Años",
+        "meses": "Meses"
+      }
+    },
+    "tasa": {
+      "label": "Rentabilidad anual estimada",
+      "ayuda": "Tasa nominal anual. Como referencia histórica de largo plazo, un índice de acciones de EE. UU. ha promediado cerca del 10 % nominal; no es una promesa a futuro."
+    },
+    "frecuencia": {
+      "label": "Frecuencia de capitalización",
+      "ayuda": "Cada cuánto el interés se suma al capital y empieza a generar más interés.",
+      "opciones": {
+        "anual": "Anual",
+        "semestral": "Semestral",
+        "trimestral": "Trimestral",
+        "mensual": "Mensual"
+      }
+    },
+    "impulso": {
+      "titulo": "Impulso inicial (opcional)",
+      "ayuda": "Aporta más durante los primeros años y deja que el tiempo haga el resto.",
+      "anios": {
+        "label": "Años de impulso",
+        "ayuda": "De 1 a 5 años, contados desde el inicio."
+      },
+      "aporte": {
+        "label": "Aporte mensual durante el impulso",
+        "ayuda": "Reemplaza al aporte mensual solo durante esos años."
+      }
+    },
+    "proteccion": {
+      "titulo": "Protección final (opcional)",
+      "ayuda": "Baja la rentabilidad esperada en los últimos años para proteger lo alcanzado, como hacen los fondos de retiro.",
+      "anios": {
+        "label": "Años de protección",
+        "ayuda": "De 1 a 5 años, contados desde el final."
+      },
+      "tasa": {
+        "label": "Rentabilidad reducida",
+        "ayuda": "La tasa a la que llegarás al final. La bajada es gradual, año a año, automática."
+      }
+    },
+    "varianza": {
+      "label": "Varianza de la tasa (opcional)",
+      "ayuda": "Puntos por encima y por debajo de tu tasa para ver un escenario prudente y uno optimista."
+    },
+    "meta": {
+      "label": "Meta (opcional)",
+      "ayuda": "¿Cuánto quieres tener al final? Calcularemos el aporte mensual necesario."
+    },
+    "inflacion": {
+      "label": "Inflación anual",
+      "ayuda": "Promedio histórico de EE. UU.: 3 %. Puedes ajustarla."
+    }
+  },
+  "error": {
+    "rango": "Ingresa un valor entre {min} y {max}.",
+    "numero": "Ingresa un número.",
+    "entero": "Ingresa un número entero."
+  },
+  "seccion": {
+    "incompleta": "Completa ambos campos para aplicar esta sección.",
+    "clampeada": {
+      "impulso": "Tu impulso cubre todo el período.",
+      "proteccion": "La protección cubre todo el período: la escalera baja desde el inicio."
+    }
+  },
+  "url": {
+    "invalida": "Algunos valores del enlace no eran válidos y usamos los predeterminados."
+  },
+  "frases": {
+    "normal": "En {años}, tendrás **{balance}**. Aportaste {aportado} y el interés puso {interes} — tu dinero se multiplicó por {mult}.",
+    "real": "En dinero de hoy: **{balanceReal}** (inflación del {inf} % anual).",
+    "meta": {
+      "ok": "Aportando **{regimen} al mes**{desdeAnio}, llegarás a **{meta}** en {años}.",
+      "desdeAnio": " desde el año {n}",
+      "superada": "🎉 Ya superas tu meta sin aportes mensuales: te sobran ≈ {sobrante}.",
+      "sinRegimen": "Tu impulso cubre todo el período y no queda tramo mensual por calcular. Ajusta la duración, la meta o el impulso."
+    }
+  },
+  "metricas": {
+    "ahorro": "Frente a un aporte fijo de {fijo}/mes que llega al mismo resultado, tu plan escalonado ahorra **{ahorro}** en aportes.",
+    "costoProteccion": "Proteger tu capital los últimos {n} años cuesta ≈ **{costo}** de resultado final. Es el precio de dormir tranquilo.",
+    "banda": "Con {tasa}±{v} %: entre **{inferior}** y **{superior}**."
+  },
+  "resultados": {
+    "titulo": "Resultados"
+  },
+  "leyenda": {
+    "inicial": "Capital inicial",
+    "aportes": "Aportes",
+    "interes": "Interés"
+  },
+  "tabla": {
+    "titulo": "Detalle anual",
+    "anio": "Año",
+    "aportado": "Aportado",
+    "interes": "Interés",
+    "balance": "Saldo",
+    "parcial": "parcial"
+  },
+  "vacio": {
+    "titulo": "Tu proyección aparecerá aquí.",
+    "cta": "Ver un ejemplo"
+  },
+  "acciones": {
+    "calcular": "Calcular",
+    "compartir": "Compartir",
+    "copiado": "Enlace copiado"
+  },
+  "tema": {
+    "toggle": "Cambiar tema"
+  },
+  "faq": {
+    "titulo": "Preguntas frecuentes",
+    "p1": "¿Qué es el interés compuesto?",
+    "r1": "El interés compuesto es el interés que gana, además de tu dinero, el interés que ya habías acumulado. Es \"interés sobre interés\". Imagina que inviertes 100 y en un año se convierten en 110: el segundo año no ganas intereses sobre 100, sino sobre 110, y así sucesivamente. Esa pequeña diferencia, repetida año tras año, hace que el crecimiento se acelere con el tiempo en lugar de avanzar en línea recta. Por eso el factor más poderoso no suele ser cuánto aportas, sino cuántos años dejas que el dinero siga componiéndose sin retirarlo.",
+    "p2": "¿Qué significa la frecuencia de capitalización?",
+    "r2": "La frecuencia de capitalización indica cada cuánto el interés generado se suma a tu capital y empieza, a su vez, a generar más interés. Con capitalización anual, ese salto ocurre una vez al año; con capitalización mensual, doce veces. A igual tasa nominal, capitalizar con más frecuencia rinde algo más, porque el interés se reinvierte antes y trabaja durante más tiempo. La diferencia entre mensual y anual suele ser modesta, pero real, y crece cuando la tasa o el plazo son mayores. En esta calculadora puedes elegir la frecuencia y ver cómo cambia el resultado final.",
+    "p3": "¿Por qué conviene aportar más los primeros años?",
+    "r3": "Cada aporte crece según el tiempo que pasa invertido, así que el dinero que entra temprano compone durante más años y termina pesando mucho más que el que llega al final. Concentrar un esfuerzo extra en los primeros años —lo que aquí llamamos \"impulso inicial\"— aprovecha justamente esa ventaja. En nuestro caso de ejemplo, adelantar aportes durante los primeros años alcanza el mismo resultado final aportando cerca de 40.000 dólares menos en total que un plan de aporte constante. No siempre es posible ahorrar más al principio, pero cuando lo es, el tiempo multiplica el efecto.",
+    "p4": "¿Qué es la \"protección final\"?",
+    "r4": "La \"protección final\" reduce de forma gradual la rentabilidad esperada durante los últimos años de tu plan, en lugar de mantenerla alta hasta el último día. Es la idea detrás de muchos fondos de jubilación: a medida que se acerca la meta, se asume menos riesgo para proteger lo ya conseguido de una caída inoportuna. Esa prudencia tiene un costo visible: al esperar menos rentabilidad al final, el resultado proyectado baja un poco frente a no proteger nada. La calculadora te muestra ese costo en dinero, para que decidas con criterio cuánta tranquilidad quieres comprar.",
+    "p5": "¿Los resultados están garantizados?",
+    "r5": "No. Los resultados son una proyección, no una promesa. Suponen una tasa de rentabilidad constante que tú eliges, pero los mercados reales suben y bajan, y ningún rendimiento pasado garantiza los futuros. Piensa en la cifra como un escenario ordenado para comparar decisiones —cuánto aportar, durante cuánto tiempo y con qué frecuencia—, no como el saldo exacto que tendrás. Tampoco consideramos impuestos, comisiones ni imprevistos personales. Esta herramienta es educativa y no constituye asesoría financiera: antes de invertir, ten en cuenta tu situación y, si lo necesitas, consulta a un profesional de confianza."
+  },
+  "footer": {
+    "creadoPor": "Creado por Yotfil",
+    "derechos": "© {anio} Yotfil. Todos los derechos reservados."
+  },
+  "descargo": "Esta calculadora es una herramienta educativa. Los resultados son proyecciones basadas en los supuestos que ingresas y no constituyen asesoría financiera ni garantía de rendimientos."
+}

@@ -15,10 +15,18 @@ Primitivos (muestra; la lista completa se fija en M6 verificando contraste):
 
 ```css
 :root {
-  --navy-950:#0A1826; --navy-900:#102A43; --navy-700:#243B53;
-  --slate-100:#F0F4F8; --slate-300:#BCCCDC; --slate-600:#486581;
-  --teal-600:#0E9888; --teal-500:#14B8A6; --teal-300:#7EDCD2;
-  --indigo-500:#6366F1; --sky-500:#38BDF8; --amber-500:#F59E0B;
+  --navy-950: #0a1826;
+  --navy-900: #102a43;
+  --navy-700: #243b53;
+  --slate-100: #f0f4f8;
+  --slate-300: #bcccdc;
+  --slate-600: #486581;
+  --teal-600: #0e9888;
+  --teal-500: #14b8a6;
+  --teal-300: #7edcd2;
+  --indigo-500: #6366f1;
+  --sky-500: #38bdf8;
+  --amber-500: #f59e0b;
 }
 ```
 

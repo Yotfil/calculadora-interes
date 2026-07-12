@@ -1,0 +1,8 @@
+[build]
+  command = "astro build"
+  publish = "dist"
+
+# Astro 7 exige Node >= 22.12 (docs/01, decisión de M1). Sin este pin, el
+# default de Netlify podría ser más viejo y romper el build.
+[build.environment]
+  NODE_VERSION = "22"

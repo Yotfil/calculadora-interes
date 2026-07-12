@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./fonts.css";
+@import "./tokens.css";
+
+/* Cuerpo/UI en Inter (docs/05 §3); las cifras y títulos piden `font-display`
+   (Lexend) explícitamente donde toca. */
+body {
+  font-family: var(--fuente-cuerpo);
+}

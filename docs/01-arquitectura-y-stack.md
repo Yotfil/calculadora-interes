@@ -8,18 +8,18 @@ $0/mes de operación · código legible por un junior · lógica testeable sin m
 
 ## 2. Stack (cada pieza contra el filtro)
 
-| Pieza | Elección | Por qué (contra el filtro) |
-|---|---|---|
-| Framework | **Astro** en modo SSG | HTML completo en build → SEO real sin servidor; i18n con rutas `/es/` `/en/`; usa Vite. SSR descartado: el contenido es idéntico para todos, generar por request paga infraestructura para producir lo mismo. Next-estático descartado: hidrata toda la página (~85 KB+ de runtime) para contenido mayormente estático |
-| UI interactiva | **React 18** como isla | La calculadora es UN componente autocontenido → embebible por diseño |
-| Motor | **TypeScript puro** en `src/core/`, cero dependencias | Sobrevive a cualquier migración; testeable sin mocks; sin `Date` (el tiempo del producto es "mes 1..N" relativo — no se necesita puerto Clock porque no hay efectos de tiempo) |
-| Estilos | **Tailwind** consumiendo tokens semánticos | Tokens en `tokens.css` (docs/05); prohibidos valores literales en componentes |
-| Gráficos | **Recharts** | Torta + barras apiladas declarativas; vive SOLO en `src/ui/` |
-| Validación | **Zod** | Un esquema para formulario Y parámetros de URL |
-| i18n | Diccionarios JSON + rutas Astro + `Intl.NumberFormat` | docs/07 |
-| Tests | **Vitest** (core) + **Playwright** (e2e) | TDD desde tablas de casos |
-| Límites | **eslint-plugin-boundaries** | Los límites se fuerzan con tooling, no con buena voluntad |
-| Deploy | **Netlify** estático | Plan gratis, conocido |
+| Pieza          | Elección                                              | Por qué (contra el filtro)                                                                                                                                                                                                                                                                                             |
+| -------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework      | **Astro** en modo SSG                                 | HTML completo en build → SEO real sin servidor; i18n con rutas `/es/` `/en/`; usa Vite. SSR descartado: el contenido es idéntico para todos, generar por request paga infraestructura para producir lo mismo. Next-estático descartado: hidrata toda la página (~85 KB+ de runtime) para contenido mayormente estático |
+| UI interactiva | **React 18** como isla                                | La calculadora es UN componente autocontenido → embebible por diseño                                                                                                                                                                                                                                                   |
+| Motor          | **TypeScript puro** en `src/core/`, cero dependencias | Sobrevive a cualquier migración; testeable sin mocks; sin `Date` (el tiempo del producto es "mes 1..N" relativo — no se necesita puerto Clock porque no hay efectos de tiempo)                                                                                                                                         |
+| Estilos        | **Tailwind** consumiendo tokens semánticos            | Tokens en `tokens.css` (docs/05); prohibidos valores literales en componentes                                                                                                                                                                                                                                          |
+| Gráficos       | **Recharts**                                          | Torta + barras apiladas declarativas; vive SOLO en `src/ui/`                                                                                                                                                                                                                                                           |
+| Validación     | **Zod**                                               | Un esquema para formulario Y parámetros de URL                                                                                                                                                                                                                                                                         |
+| i18n           | Diccionarios JSON + rutas Astro + `Intl.NumberFormat` | docs/07                                                                                                                                                                                                                                                                                                                |
+| Tests          | **Vitest** (core) + **Playwright** (e2e)              | TDD desde tablas de casos                                                                                                                                                                                                                                                                                              |
+| Límites        | **eslint-plugin-boundaries**                          | Los límites se fuerzan con tooling, no con buena voluntad                                                                                                                                                                                                                                                              |
+| Deploy         | **Netlify** estático                                  | Plan gratis, conocido                                                                                                                                                                                                                                                                                                  |
 
 ## 3. Estructura de carpetas
 
@@ -46,34 +46,46 @@ Violación de límites = error de lint = commit bloqueado.
 ## 5. Contrato del motor (firma pública de `core`)
 
 ```ts
-export type FrecuenciaCap = 1 | 2 | 4 | 12;           // anual..mensual
+export type FrecuenciaCap = 1 | 2 | 4 | 12; // anual..mensual
 export type AniosSeccion = 1 | 2 | 3 | 4 | 5;
 
 export interface Escenario {
   capitalInicial: number;
   aporteRegimen: number;
-  duracionMeses: number;                               // unidad canónica: meses
-  tasaNominalAnual: number;                            // en %, ej. 10
+  duracionMeses: number; // unidad canónica: meses
+  tasaNominalAnual: number; // en %, ej. 10
   frecuencia: FrecuenciaCap;
   impulso?: { anios: AniosSeccion; aporteMensual: number };
   proteccion?: { anios: AniosSeccion; tasaReducida: number };
-  varianza?: number;                                   // en puntos de %, ej. 1
+  varianza?: number; // en puntos de %, ej. 1
 }
 
-export interface FilaAnual { anio: number; aportado: number; interes: number; balance: number }
+export interface FilaAnual {
+  anio: number;
+  aportado: number;
+  interes: number;
+  balance: number;
+}
 
 export interface Resultado {
   balanceFinal: number;
-  filas: FilaAnual[];                                  // la última puede ser parcial
-  totalAportado: number;                               // incluye capital inicial
+  filas: FilaAnual[]; // la última puede ser parcial
+  totalAportado: number; // incluye capital inicial
   interesTotal: number;
-  multiplicador: number;                               // balanceFinal / totalAportado
-  banda?: { inferior: number; superior: number };      // si hay varianza
+  multiplicador: number; // balanceFinal / totalAportado
+  banda?: { inferior: number; superior: number }; // si hay varianza
 }
 
 export function calcular(e: Escenario): Resultado;
-export function despejarRegimen(e: Omit<Escenario,'aporteRegimen'>, meta: number): Despeje; // docs/03 §1
-export function deflactar(valorNominal: number, mes: number, inflacionAnualPct: number): number;
+export function despejarRegimen(
+  e: Omit<Escenario, "aporteRegimen">,
+  meta: number,
+): Despeje; // docs/03 §1
+export function deflactar(
+  valorNominal: number,
+  mes: number,
+  inflacionAnualPct: number,
+): number;
 ```
 
 La UI nunca calcula nada: toda cifra mostrada sale de `Resultado` o de las
