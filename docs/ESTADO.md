@@ -10,14 +10,16 @@ primero, rojo, implementación; tolerancia ±0,01 USD). El impulso escalonado
 construye el hook `aporte(t)` dentro de `calcular` (el bucle NO cambia; decisión
 de M2). Firma pública ya declarada: `Escenario.impulso?: { anios, aporteMensual }`
 (`docs/01` §5).
-**Estado del deploy (M8):** dominio real `https://helenguevara.com` fijado en
-config/robots/e2e; `netlify.toml` versionado (`astro build`→`dist`, Node 22);
-release 1.0.0 cortado (bump only en `release/1.0.0`). **Trabajo humano pendiente
-de Jef** (no bloquea a Claude): mergear los 3 PRs en orden (feature→dev,
-release→dev, LUEGO dev→main), crear el sitio en Netlify + apuntar el DNS de
-helenguevara.com + HTTPS, alta en Search Console + envío del sitemap. GA4 diferido
-(PUBLIC_GA4_ID vacío → analítica off → sin aviso de cookies en 1.0.0). Gates
-humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
+**Estado del deploy (M8):** ✅ **1.0.0 EN PRODUCCIÓN** en
+`https://helenguevara.com` (2026-07-12). Los 3 PRs se mergearon en orden (#14
+feature→dev, #15 release→dev, #16 dev→main); `main` sirve el build. Smoke-test en
+vivo verde: `/en/` y `/es/` 200 HTTPS, canonical/robots/sitemap-index en el
+dominio real, footer `v1.0.0` (commit `4b857ac`). Netlify (proyecto `snowbol`,
+rama de producción `main`, build vía `netlify.toml`) + DNS + HTTPS: hechos por Jef.
+GA4 diferido (PUBLIC_GA4_ID vacío → analítica off → sin aviso de cookies).
+**Trabajo humano restante de Jef** (no bloquea a Claude): alta en Search Console +
+envío del sitemap; y los gates de contenido del README (revisar en_US y las 5
+respuestas de FAQ) ahora con la app ya pública.
 
 ## Checklist canónica de módulos
 
@@ -39,9 +41,9 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
       precargado (E1/F2) diferido a M12 (E1 usa impulso de Avanzada).
 - [x] **M7 · SEO + analítica**: metas, hreflang, schema.org, GA4 (`calcular`
       cableado; los otros 3 con su feature), sitemap + robots (`docs/06`).
-- [x] **M8 · Deploy**: dominio real `helenguevara.com` (config/robots/e2e),
-      `netlify.toml` versionado, release 1.0.0 cortado. Netlify/DNS/Search Console
-      = trabajo humano de Jef.
+- [x] **M8 · Deploy**: ✅ 1.0.0 **en producción** en `https://helenguevara.com`
+      (dominio real en config/robots/e2e, `netlify.toml` versionado, PRs #14–#16
+      mergeados). Search Console = trabajo humano pendiente de Jef.
 
 ### Fase 2 — Avanzada y Experto (release 1.1.0)
 
@@ -326,6 +328,11 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
   (README con lenguaje de placeholder) se aplicó. **Claude no mergea**: entregados
   los 3 links de PR (feature→dev, release→dev, dev→main). Trabajo humano de Jef:
   Netlify + DNS + Search Console. `main` avanza por primera vez con este release.
+Jef mergeó los 3 PRs (#14–#16) en orden y desplegó: **1.0.0 quedó en vivo en
+`https://helenguevara.com`** el mismo día (proyecto Netlify `snowbol`, rama
+`main`, build vía `netlify.toml`). Smoke-test remoto verde (200 HTTPS en ambos
+idiomas, canonical/robots/sitemap en el dominio real, footer `v1.0.0`). Falta solo
+Search Console + los gates de contenido, ya con la app pública.
 - **2026-07-12 · Extra (post-M7) — Ajustes de UI (Snowball, anchos, FAQ colapsable)** ✅.
   Rama `feature/ui-header-footer-faq` (base `dev`). Tarea de UI NO planeada (pedido de Jef
   antes del deploy). App renombrada a "Snowball: …" (clave `titulo` es+en; se propaga a
