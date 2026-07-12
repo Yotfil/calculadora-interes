@@ -1,0 +1,57 @@
+---
+// Shell HTML compartido por /es/ y /en/ (docs/07 §1). Single-source del head,
+// header con selector de idioma, footer con descargo + versión, y montaje de la
+// isla. Todo texto visible sale del diccionario (docs/07 §2): cero strings aquí.
+import type { Diccionario } from "../i18n/diccionario";
+import type { Locale } from "../i18n/locale";
+import { t } from "../i18n/t";
+import Calculadora from "../ui/Calculadora";
+import "../styles/global.css";
+
+interface Props {
+  locale: Locale;
+  dict: Diccionario;
+}
+
+const { locale, dict } = Astro.props;
+const otro: Locale = locale === "es" ? "en" : "es";
+const titulo = t(dict, "titulo");
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{titulo}</title>
+  </head>
+  <body class="bg-superficie text-texto">
+    <header>
+      <a href={`/${locale}/`}>{titulo}</a>
+      <a
+        id="selector-idioma"
+        data-testid="selector-idioma"
+        href={`/${otro}/`}
+        hreflang={otro}
+        aria-label={t(dict, "idioma.selector")}>{t(dict, `idioma.${otro}`)}</a
+      >
+    </header>
+    <main>
+      <Calculadora client:load locale={locale} dict={dict} />
+    </main>
+    <slot />
+    <footer>
+      <p>{t(dict, "descargo")}</p>
+      <span data-testid="version">v{__APP_VERSION__}</span>
+    </footer>
+    <script is:inline>
+      // El selector conserva query + hash al cambiar de idioma (docs/07 §1).
+      const sel = document.getElementById("selector-idioma");
+      if (sel)
+        sel.setAttribute(
+          "href",
+          sel.getAttribute("href") + location.search + location.hash,
+        );
+    </script>
+  </body>
+</html>

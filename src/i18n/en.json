@@ -1,0 +1,118 @@
+{
+  "titulo": "Compound interest calculator",
+  "idioma": {
+    "es": "Español",
+    "en": "English",
+    "selector": "Change language"
+  },
+  "tabs": {
+    "basica": "Basic",
+    "avanzada": "Advanced",
+    "experto": "Expert"
+  },
+  "campos": {
+    "capitalInicial": {
+      "label": "Initial capital",
+      "ayuda": "The money you start with today. It can be 0."
+    },
+    "aporteRegimen": {
+      "label": "Monthly contribution",
+      "ayuda": "What you add each month. It's credited at the end of each month."
+    },
+    "duracion": {
+      "label": "Investment horizon",
+      "ayuda": "How many years (or months) will you let the money grow?"
+    },
+    "tasa": {
+      "label": "Estimated annual return",
+      "ayuda": "Nominal annual rate. As a long-term historical reference, a U.S. stock index has averaged around 10 % nominal; it's not a promise about the future."
+    },
+    "frecuencia": {
+      "label": "Compounding frequency",
+      "ayuda": "How often the interest is added to the principal and starts earning more interest."
+    },
+    "impulso": {
+      "titulo": "Early boost (optional)",
+      "ayuda": "Contribute more during the first years and let time do the rest.",
+      "anios": {
+        "label": "Boost years",
+        "ayuda": "From 1 to 5 years, counted from the start."
+      },
+      "aporte": {
+        "label": "Monthly contribution during the boost",
+        "ayuda": "Replaces the monthly contribution only during those years."
+      }
+    },
+    "proteccion": {
+      "titulo": "Final protection (optional)",
+      "ayuda": "Lowers the expected return in the last years to protect what you've reached, like retirement funds do.",
+      "anios": {
+        "label": "Protection years",
+        "ayuda": "From 1 to 5 years, counted from the end."
+      },
+      "tasa": {
+        "label": "Reduced return",
+        "ayuda": "The rate you'll reach by the end. The decrease is gradual, year by year, automatic."
+      }
+    },
+    "varianza": {
+      "label": "Rate variance (optional)",
+      "ayuda": "Points above and below your rate to see a cautious scenario and an optimistic one."
+    },
+    "meta": {
+      "label": "Goal (optional)",
+      "ayuda": "How much do you want to have at the end? We'll compute the monthly contribution needed."
+    },
+    "inflacion": {
+      "label": "Annual inflation",
+      "ayuda": "U.S. historical average: 3 %. You can adjust it."
+    }
+  },
+  "error": {
+    "rango": "Enter a value between {min} and {max}.",
+    "numero": "Enter a number.",
+    "entero": "Enter a whole number."
+  },
+  "seccion": {
+    "incompleta": "Complete both fields to apply this section.",
+    "clampeada": {
+      "impulso": "Your boost covers the whole period.",
+      "proteccion": "Protection covers the whole period: the ramp goes down from the start."
+    }
+  },
+  "url": {
+    "invalida": "Some values in the link weren't valid, so we used the defaults."
+  },
+  "frases": {
+    "normal": "In {años}, you'll have **{balance}**. You contributed {aportado} and interest added {interes} — your money multiplied by {mult}.",
+    "real": "In today's money: **{balanceReal}** ({inf} % annual inflation).",
+    "meta": {
+      "ok": "Contributing **{regimen} per month**{desdeAnio}, you'll reach **{meta}** in {años}.",
+      "desdeAnio": " from year {n}",
+      "superada": "🎉 You already exceed your goal with no monthly contributions: you have ≈ {sobrante} to spare.",
+      "sinRegimen": "Your boost covers the whole period and there's no monthly stretch left to compute. Adjust the horizon, the goal or the boost."
+    }
+  },
+  "metricas": {
+    "ahorro": "Compared with a fixed contribution of {fijo}/month that reaches the same result, your staged plan saves **{ahorro}** in contributions.",
+    "costoProteccion": "Protecting your capital in the last {n} years costs ≈ **{costo}** of final result. It's the price of sleeping soundly.",
+    "banda": "With {tasa}±{v} %: between **{inferior}** and **{superior}**."
+  },
+  "vacio": {
+    "titulo": "Your projection will appear here.",
+    "cta": "See an example"
+  },
+  "acciones": {
+    "calcular": "Calculate",
+    "compartir": "Share",
+    "copiado": "Link copied"
+  },
+  "faq": {
+    "p1": "What is compound interest?",
+    "p2": "What does compounding frequency mean?",
+    "p3": "Why is it worth contributing more in the early years?",
+    "p4": "What is \"final protection\"?",
+    "p5": "Are the results guaranteed?"
+  },
+  "descargo": "This calculator is an educational tool. The results are projections based on the assumptions you enter and do not constitute financial advice or a guarantee of returns."
+}

@@ -1,20 +1,30 @@
 ---
-// Placeholder hasta M4 (rutas /es/ /en/) y M5 (formulario). docs/04.
-import "../styles/global.css";
-import Calculadora from "../ui/Calculadora";
+// Raíz: redirección en cliente por navigator.language (docs/07 §1); x-default → /en/.
+// No monta la isla ni el shell completo — es un redirector que se abandona al instante.
+// Los enlaces visibles son el fallback sin JS. Endónimos vía diccionario (iguales en
+// ambos idiomas), para no hardcodear strings.
+import { diccionarios } from "../i18n/diccionario";
+import { t } from "../i18n/t";
+
+const dict = diccionarios.es;
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Calculadora de interés compuesto</title>
+    <title>{t(dict, "titulo")}</title>
+    <script is:inline>
+      // es* → /es/, resto → /en/. replace() no ensucia el historial; se conservan
+      // query + hash para los enlaces compartidos (M18).
+      const lang = navigator.language || "";
+      const destino = /^es\b/i.test(lang) ? "/es/" : "/en/";
+      location.replace(destino + location.search + location.hash);
+    </script>
   </head>
-  <body class="bg-superficie text-texto">
-    <main>
-      <Calculadora client:load />
-    </main>
-    <footer data-testid="version">v{__APP_VERSION__}</footer>
+  <body>
+    <a href="/es/">{t(dict, "idioma.es")}</a>
+    <a href="/en/">{t(dict, "idioma.en")}</a>
   </body>
 </html>
