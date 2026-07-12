@@ -4,18 +4,19 @@
 
 ## Próximo paso
 
-Módulo 6 (UI resultados: cifra grande + frase, torta, barras, tabla, animación
-firma, ejemplo precargado, temas claro/oscuro). Leer `docs/04` §4, `docs/05` y
-`docs/06` §1 según la tabla de ruteo de CLAUDE.md.
-**Base que deja M5 para M6:** la isla `Calculadora` ya tiene el estado del
-formulario (strings) y `aEscenario` está listo pero SIN usar; M6 conecta
-`aEscenario→calcular` en la ruta de éxito del botón Calcular y renderiza el
-`Resultado`. Pendientes de M6 que M5 dejó anotados: paleta completa de tokens +
-verificación de contraste AA + tema oscuro (`[data-theme]`) + fuentes self-hosted
-(Lexend/Inter) — hoy `tokens.css` solo tiene los semánticos del formulario con
-primitivas provisionales (incl. `--rojo-600` de error, sin fijar en docs/05).
-Las claves `frases.*`/`metricas.*` ya están sembradas (M4); faltan las de la
-tabla/estado vacío si M6 las necesita (docs/04 §4).
+Módulo 7 (SEO + analítica): `<title>`/meta description por idioma, hreflang
+recíproco + x-default → `/en/`, canonical, HTML semántico con copy educativo y
+FAQ (respuestas 80–120 palabras, docs/07 §5), schema.org (`WebApplication` +
+`FAQPage` JSON-LD), sitemap.xml + robots.txt, y GA4 con EXACTAMENTE 4 eventos
+detrás de `src/analytics/track` (no-op si `PUBLIC_GA4_ID` vacío). Leer
+`docs/06` §2–3 según la tabla de ruteo.
+**Base que deja M6 para M7:** el motor está cableado y la Básica calcula/renderiza
+completa; el evento GA4 `calcular` se dispara desde la ruta de éxito de
+`Calculadora.calcular` (`tab`, `con_impulso`, `con_proteccion`). `src/analytics/`
+sigue vacío (solo `.gitkeep`): M7 crea `track`. Pendientes humanos heredados:
+revisar el en_US antes del 1.0.0 y las respuestas de FAQ (solo títulos hoy).
+El presupuesto JS de la isla ya está en ~169 KB gzip (Recharts incluido; tope
+200 KB, docs/06 §3): vigilarlo al inyectar el snippet de GA4.
 
 ## Checklist canónica de módulos
 
@@ -32,8 +33,9 @@ tabla/estado vacío si M6 las necesita (docs/04 §4).
       redirección de raíz (`docs/07`).
 - [x] **M5 · UI formulario Básica**: layout, tabs (Avanzada/Experto visibles pero
       con contenido de Fase 2 oculto), pasos 1–4, validación inline (`docs/04`).
-- [ ] **M6 · UI resultados**: cifra grande + frase, torta, barras, tabla,
-      animación firma, ejemplo precargado, temas claro/oscuro (`docs/04` §4, `docs/05`).
+- [x] **M6 · UI resultados**: cifra grande + frase, torta, barras, tabla,
+      animación firma, temas claro/oscuro (`docs/04` §4, `docs/05`). Ejemplo
+      precargado (E1/F2) diferido a M12 (E1 usa impulso de Avanzada).
 - [ ] **M7 · SEO + analítica**: metas, hreflang, schema.org, GA4 (4 eventos),
       sitemap (`docs/06`).
 - [ ] **M8 · Deploy**: Netlify + release 1.0.0.
@@ -161,6 +163,39 @@ tabla/estado vacío si M6 las necesita (docs/04 §4).
   (presentacionales puros). Los 3 tabs comparten los pasos 1–4; las secciones de
   Fase 2 se añaden en M12–M13 (docs/04 §2).
 
+- **M6 · "Ver un ejemplo"/E1/F2 diferidos a M12** (confirmado con Jef): E1
+  canónico (docs/02 §83) usa impulso escalonado, función de Avanzada inexistente
+  en la Básica de Fase 1; F2 (1 006 969) es imposible aquí. El estado vacío solo
+  muestra la invitación (`vacio.titulo`); la clave `vacio.cta` queda sembrada
+  pero SIN usar hasta M12. El flujo demo de M6 es F1 (defaults → Calcular).
+- **M6 · Tema = dos mapeos de los semánticos** (docs/05 §2): tema claro en
+  `:root`, oscuro en `[data-theme="dark"]` + fallback `prefers-color-scheme`
+  (salvo `[data-theme="light"]`). Script `is:inline` anti-FOUC en el head fija
+  `data-theme` antes del paint (localStorage > sistema). Toggle en el header
+  persiste en localStorage: el tema NO es estado de formulario, así que no viola
+  la regla "sin localStorage" de docs/04 §3 (esa es solo para el form).
+- **M6 · Contraste AA obligó a oscurecer dos hex del tema claro** respecto a la
+  muestra de docs/05 §2: `aportes` amber #f59e0b→#d97706 (2,15→3,19 sobre blanco,
+  WCAG 1.4.11 objeto gráfico) y `exito` verde #16a34a→#15803d (3,30→5,02). Además
+  `accion` subió a teal-700 (#0b7c70) en claro: da 5,08 con label blanco y cierra
+  el bajo contraste provisional del botón que dejó M5. El tema oscuro pasa todo.
+- **M6 · Gráficos con Recharts 3.9** (docs/01 §17): torta + barras apiladas, cada
+  serie con color + `<pattern>` SVG (daltonismo, docs/05 §5) definido una sola vez
+  en `PatronesDefs`. Los SVG van `aria-hidden`; la `<table>` real es el
+  equivalente accesible. Las 3 series (inicial/aportes/interes) comparten id de
+  patrón en torta, barras, leyenda y tabla (`src/ui/series.ts`).
+- **M6 · Fuentes variables, un woff2 por familia**: Google sirve Inter/Lexend
+  como fuente variable; el subset latin es un solo archivo por familia declarado
+  con `font-weight: 100 900`. Servidas desde `/public/fonts` con preload.
+- **M6 · Animación firma repartida**: la cifra cuenta con `useContadorAnimado`
+  (rAF + cubic-bezier(0.5,0,0.9,0.4) exacto por Newton-Raphson); las barras usan
+  el preset Recharts más cercano (`ease-in`), porque Recharts no acepta bezier
+  custom. `prefers-reduced-motion` → sin animación y scroll instantáneo; la cifra
+  se calcula client-side, tras el click, sin riesgo de mismatch de hidratación.
+- **M6 · Composición**: torta = inicial(P) + aportes(totalAportado−P) +
+  interes(interesTotal) = balanceFinal; barras acumuladas P+Σaportado+Σinteres =
+  balance del año (`FilaAnual.aportado` NO incluye P, decisión de M2).
+
 ## Trampas conocidas
 
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
@@ -179,7 +214,7 @@ tabla/estado vacío si M6 las necesita (docs/04 §4).
 
 - `Number("") === 0` en JS: NO usar `z.coerce.number()` directo para campos de
   formulario/URL — un input vacío se volvería 0 en vez de default. El esquema
-  neutraliza esto con el preprocess `aNumero` ("", null y "  " → ausente).
+  neutraliza esto con el preprocess `aNumero` ("", null y " " → ausente).
 - El param URL `dur` es SIEMPRE en meses y `durU` es solo para el radio
   (`docs/04` §5): M18 no debe mapear `durU` → `duracionUnidad` al validar
   (`dur=120&durU=a` fallaría el rango 1–50). Validar `dur` con unidad `'m'`
@@ -207,8 +242,42 @@ tabla/estado vacío si M6 las necesita (docs/04 §4).
   se puede commitear en un orden que deje `src/layouts/` sin su elemento de
   boundaries (daría "unknown element"). Config de boundaries primero.
 
+- El e2e reusa un servidor ya escuchando en el puerto 4321
+  (`reuseExistingServer: !CI`). Un `astro preview`/`dev` viejo sirviendo un build
+  anterior produce fallos FANTASMA de hidratación (la isla no reacciona; el form
+  hace submit GET nativo y recarga con `?duracionUnidad=a`). Tras cambios de
+  build, `lsof -ti:4321 | xargs kill -9` antes de correr el e2e.
+- Los `<input>` de `Campo` NO tienen atributo `name` (el estado vive en React):
+  un submit nativo solo serializaría el radio `duracionUnidad`. Por eso, si la
+  isla no hidrata, el síntoma es una navegación GET a `?duracionUnidad=a`.
+- Recharts pesa: la isla quedó en ~169 KB gzip (tope 200 KB, docs/06 §3). Cada
+  añadido de Fase 2 debe medirse contra ese margen.
+
 ## Historial de sesiones
 
+- **2026-07-11 · Sesión 6 — M6 UI resultados Básica** ✅. Rama
+  `feature/modulo-06-ui-resultados` (9 commits granulares sobre `dev`). Tarea
+  estructural multi-archivo. Se cableó `aEscenario→calcular→Resultado` en la ruta
+  de éxito del botón (con errores sigue el scroll+focus de M5, sin calcular) y se
+  reorganizó la isla a layout de dos columnas (form / resultados fijos en desktop;
+  apilado con scroll suave al calcular en mobile, respetando reduced-motion).
+  Componentes nuevos (uno por archivo): `Resultado`, `CifraGrande` (+ hook
+  `useContadorAnimado`), `FraseResumen`, `Torta`, `BarrasApiladas`, `TablaAnual`,
+  `Leyenda`, `EstadoVacio`, `PatronesDefs`, `series.ts`. Tokens definitivos +
+  tema oscuro con contraste AA verificado por script (amber/verde/accion del tema
+  claro ajustados). Fuentes self-hosted Inter/Lexend (subset latin, variable) con
+  preload. Toggle de tema + anti-FOUC en `Base.astro`. Recharts 3.9. Claves i18n
+  nuevas es+en (`tabla.*`, `tema.*`, `leyenda.*`, `resultados.titulo`), paridad
+  intacta. 140 tests unit (sin nuevos; el motor y el esquema ya cubrían la
+  lógica) + 14 e2e (+2: F1 cálculo básico con frase exacta 20.514,24 y tabla de
+  10 filas; F9 reduced-motion). Bundle isla ~169 KB gzip < 200. Revisión de diff
+  con subagente fresco contra docs/04 §4, 05 y 06 §1: sin bloqueantes; verificó la
+  aritmética de composición ejecutando el motor (cuadra a 0/ruido float). Sus 2
+  NITs accionables se aplicaron (campo `color` muerto en `series.ts`;
+  `aria-label` del landmark de resultados con clave propia `resultados.titulo`);
+  el 3.º (`vacio.cta` huérfana) es intencional (diferido a M12). Verificación
+  visual en claro/oscuro/mobile-en con screenshots. Pendientes humanos: en_US y
+  respuestas de FAQ antes del 1.0.0.
 - **2026-07-11 · Sesión 5 — M5 UI formulario Básica** ✅. Rama
   `feature/modulo-05-ui-formulario` (6 commits granulares sobre `dev`). Tarea
   estructural multi-archivo (no TDD de motor). Se expuso `rangos` como fuente única
