@@ -115,6 +115,14 @@
     "costoProteccion": "Proteger tu capital los últimos {n} años cuesta ≈ **{costo}** de resultado final. Es el precio de dormir tranquilo.",
     "banda": "Con {tasa}±{v} %: entre **{inferior}** y **{superior}**."
   },
+  "tabla": {
+    "titulo": "Detalle anual",
+    "anio": "Año",
+    "aportado": "Aportado",
+    "interes": "Interés",
+    "balance": "Saldo",
+    "parcial": "parcial"
+  },
   "vacio": {
     "titulo": "Tu proyección aparecerá aquí.",
     "cta": "Ver un ejemplo"
@@ -123,6 +131,9 @@
     "calcular": "Calcular",
     "compartir": "Compartir",
     "copiado": "Enlace copiado"
+  },
+  "tema": {
+    "toggle": "Cambiar tema"
   },
   "faq": {
     "p1": "¿Qué es el interés compuesto?",

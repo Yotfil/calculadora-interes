@@ -115,6 +115,14 @@
     "costoProteccion": "Protecting your capital in the last {n} years costs ≈ **{costo}** of final result. It's the price of sleeping soundly.",
     "banda": "With {tasa}±{v} %: between **{inferior}** and **{superior}**."
   },
+  "tabla": {
+    "titulo": "Yearly breakdown",
+    "anio": "Year",
+    "aportado": "Contributed",
+    "interes": "Interest",
+    "balance": "Balance",
+    "parcial": "partial"
+  },
   "vacio": {
     "titulo": "Your projection will appear here.",
     "cta": "See an example"
@@ -123,6 +131,9 @@
     "calcular": "Calculate",
     "compartir": "Share",
     "copiado": "Link copied"
+  },
+  "tema": {
+    "toggle": "Toggle theme"
   },
   "faq": {
     "p1": "What is compound interest?",
