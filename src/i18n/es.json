@@ -6,9 +6,16 @@
     "selector": "Cambiar idioma"
   },
   "tabs": {
+    "aria": "Nivel de la calculadora",
     "basica": "Básica",
     "avanzada": "Avanzada",
     "experto": "Experto"
+  },
+  "pasos": {
+    "paso1": "Paso 1 · Capital inicial",
+    "paso2": "Paso 2 · Aportes",
+    "paso3": "Paso 3 · Tiempo",
+    "paso4": "Paso 4 · Rentabilidad"
   },
   "campos": {
     "capitalInicial": {
@@ -21,7 +28,11 @@
     },
     "duracion": {
       "label": "Tiempo de inversión",
-      "ayuda": "¿Cuántos años (o meses) dejarás crecer el dinero?"
+      "ayuda": "¿Cuántos años (o meses) dejarás crecer el dinero?",
+      "unidad": {
+        "anios": "Años",
+        "meses": "Meses"
+      }
     },
     "tasa": {
       "label": "Rentabilidad anual estimada",
@@ -29,7 +40,13 @@
     },
     "frecuencia": {
       "label": "Frecuencia de capitalización",
-      "ayuda": "Cada cuánto el interés se suma al capital y empieza a generar más interés."
+      "ayuda": "Cada cuánto el interés se suma al capital y empieza a generar más interés.",
+      "opciones": {
+        "anual": "Anual",
+        "semestral": "Semestral",
+        "trimestral": "Trimestral",
+        "mensual": "Mensual"
+      }
     },
     "impulso": {
       "titulo": "Impulso inicial (opcional)",
