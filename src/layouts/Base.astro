@@ -6,6 +6,8 @@ import type { Diccionario } from "../i18n/diccionario";
 import type { Locale } from "../i18n/locale";
 import { t } from "../i18n/t";
 import Calculadora from "../ui/Calculadora";
+import Faq from "../ui/Faq.astro";
+import Seo from "./Seo.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -16,6 +18,10 @@ interface Props {
 const { locale, dict } = Astro.props;
 const otro: Locale = locale === "es" ? "en" : "es";
 const titulo = t(dict, "titulo");
+
+// GA4 solo si hay ID (docs/06 §2): sin ID no se inyecta el snippet, así que
+// `window.gtag` no existe y `track` es no-op en dev/tests.
+const ga4 = import.meta.env.PUBLIC_GA4_ID;
 ---
 
 <!doctype html>
@@ -24,6 +30,26 @@ const titulo = t(dict, "titulo");
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{titulo}</title>
+    <Seo locale={locale} dict={dict} />
+    {
+      ga4 && (
+        <Fragment>
+          <script
+            is:inline
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${ga4}`}
+          />
+          <script is:inline define:vars={{ ga4 }}>
+            // Bootstrap gtag.js. `track` (src/analytics) llama window.gtag; aquí
+            // se define y encola el arranque. Rest params en vez de `arguments`:
+            // gtag.js consume cada entrada de dataLayer por índice/length.
+            window.dataLayer = window.dataLayer || []; window.gtag = function
+            (...args) { window.dataLayer.push(args); }; window.gtag("js", new
+            Date()); window.gtag("config", ga4);
+          </script>
+        </Fragment>
+      )
+    }
     <link
       rel="preload"
       href="/fonts/inter-latin.woff2"
@@ -106,6 +132,7 @@ const titulo = t(dict, "titulo");
       <Calculadora client:load locale={locale} dict={dict} />
     </main>
     <slot />
+    <Faq dict={dict} />
     <footer>
       <p>{t(dict, "descargo")}</p>
       <span data-testid="version">v{__APP_VERSION__}</span>

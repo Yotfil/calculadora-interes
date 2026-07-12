@@ -1,0 +1,33 @@
+---
+// Sección de preguntas frecuentes al pie, renderizada en el HTML estático: es lo
+// que indexan los buscadores (docs/06 §3). Sin JS (no es isla). El texto y las 5
+// respuestas (80–120 palabras) salen del diccionario (docs/07 §5).
+import type { Diccionario } from "../i18n/diccionario";
+import { t } from "../i18n/t";
+
+interface Props {
+  dict: Diccionario;
+}
+
+const { dict } = Astro.props;
+const preguntas = [1, 2, 3, 4, 5];
+---
+
+<section
+  aria-labelledby="faq-titulo"
+  class="mx-auto max-w-2xl px-4 py-8 text-texto"
+>
+  <h2 id="faq-titulo" class="font-display text-xl font-semibold">
+    {t(dict, "faq.titulo")}
+  </h2>
+  <dl class="mt-4 flex flex-col gap-6">
+    {
+      preguntas.map((n) => (
+        <div>
+          <dt class="font-display font-semibold">{t(dict, `faq.p${n}`)}</dt>
+          <dd class="mt-1 text-texto-suave">{t(dict, `faq.r${n}`)}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</section>
