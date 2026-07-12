@@ -41,6 +41,7 @@ export default tseslint.config(
         { type: "i18n", pattern: "src/i18n" },
         { type: "analytics", pattern: "src/analytics" },
         { type: "pages", pattern: "src/pages" },
+        { type: "layouts", pattern: "src/layouts" },
         { type: "styles", pattern: "src/styles" },
       ],
       "boundaries/include": ["src/**/*"],
@@ -85,8 +86,21 @@ export default tseslint.config(
                       "ui",
                       "i18n",
                       "analytics",
+                      "layouts",
                       "styles",
                     ],
+                  },
+                },
+              },
+            },
+            // Un layout es pegamento presentacional: espeja a `pages` (docs/01 §4,
+            // extensión anotada en ESTADO — la estructura no listaba `layouts`).
+            {
+              from: { element: { types: "layouts" } },
+              allow: {
+                to: {
+                  element: {
+                    types: ["layouts", "core", "ui", "i18n", "analytics", "styles"],
                   },
                 },
               },
@@ -96,7 +110,7 @@ export default tseslint.config(
             {
               from: {
                 element: {
-                  types: ["ui", "i18n", "analytics", "pages", "styles"],
+                  types: ["ui", "i18n", "analytics", "pages", "layouts", "styles"],
                 },
               },
               allow: { to: { module: { origin: ["external", "core"] } } },
