@@ -300,6 +300,7 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
   `footer.creadoPor`/`footer.derechos` (es+en, paridad intacta). 142 unit + 34 e2e
   (+4 branding). Verificación visual claro/oscuro con screenshots. Revisión de diff
   con subagente fresco: sin bloqueantes; su NIT (línea "· ·" sin git) se blindó.
+  Mergeado a `dev` (PR #11). `main` sigue sin avanzar (el primer release es M8).
 - **2026-07-12 · Sesión 7 — M7 SEO + analítica** ✅. Rama
   `feature/modulo-07-seo-analitica` (8 commits granulares sobre `dev`). Tarea
   estructural multi-archivo (Plan Mode + confirmación de 3 decisiones con Jef:
