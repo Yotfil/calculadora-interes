@@ -115,6 +115,9 @@
     "costoProteccion": "Proteger tu capital los últimos {n} años cuesta ≈ **{costo}** de resultado final. Es el precio de dormir tranquilo.",
     "banda": "Con {tasa}±{v} %: entre **{inferior}** y **{superior}**."
   },
+  "resultados": {
+    "titulo": "Resultados"
+  },
   "leyenda": {
     "inicial": "Capital inicial",
     "aportes": "Aportes",

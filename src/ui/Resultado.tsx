@@ -39,7 +39,7 @@ export default function Resultado({
   return (
     <section
       data-testid="resultado"
-      aria-label={t(dict, "tabla.titulo")}
+      aria-label={t(dict, "resultados.titulo")}
       className="flex flex-col gap-6"
     >
       <PatronesDefs />

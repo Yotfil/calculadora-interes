@@ -115,6 +115,9 @@
     "costoProteccion": "Protecting your capital in the last {n} years costs ≈ **{costo}** of final result. It's the price of sleeping soundly.",
     "banda": "With {tasa}±{v} %: between **{inferior}** and **{superior}**."
   },
+  "resultados": {
+    "titulo": "Results"
+  },
   "leyenda": {
     "inicial": "Initial capital",
     "aportes": "Contributions",
