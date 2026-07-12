@@ -198,7 +198,7 @@ en M4 (docs/07 no da su texto literal): nacen en M5/M6 desde `docs/04`.
   `errores.<campo>.*` del esquema vs `error.*` del diccionario) se verificó como
   la decisión ya acordada — el mapeo es trabajo de M5, anotado en "Próximo paso".
   Su nota accionable (la paridad no cubría placeholders) se aplicó: test extra.
-  Pendiente humano: revisar el en_US antes del 1.0.0.
+  PR #4 mergeado a `dev`. Pendiente humano: revisar el en_US antes del 1.0.0.
 - **2026-07-11 · Sesión 3 — M3 Validación y tipos** ✅. Rama
   `feature/modulo-03-validacion-tipos` (5 commits granulares sobre `dev`).
   TDD estricto en dos ciclos (esquema y mapper): tests primero, rojo
