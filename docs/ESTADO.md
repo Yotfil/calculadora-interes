@@ -307,8 +307,8 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
   conteo de palabras FAQ y R3 con el dato de ahorro. Su único accionable (raíz
   sin `noindex`) se aplicó + test e2e. Trampa nueva: `prettier --write .` ensució
   el diff con reflow ajeno (revertido). Pendientes humanos: en_US, respuestas FAQ
-  y aviso de cookies antes del 1.0.0; `favicon.svg` apareció sin trackear (no lo
-  creó M7): queda fuera del PR, a decisión de Jef.
+  y aviso de cookies antes del 1.0.0. `favicon.svg` (aportado por Jef) se referenció
+  en el `<head>` de `Base.astro` y entró en el PR.
 - **2026-07-11 · Sesión 6 — M6 UI resultados Básica** ✅. Rama
   `feature/modulo-06-ui-resultados` (10 commits granulares sobre `dev`). Tarea
   estructural multi-archivo. Se cableó `aEscenario→calcular→Resultado` en la ruta
