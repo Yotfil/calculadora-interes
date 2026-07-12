@@ -90,9 +90,10 @@ const buildInfo = [`v${__APP_VERSION__}`, __COMMIT_DATE__, __COMMIT_HASH__]
     </script>
   </head>
   <body class="bg-superficie font-cuerpo text-texto">
-    <header
-      class="flex items-center justify-between gap-4 border-b border-borde bg-fondo p-4"
-    >
+    <header class="border-b border-borde bg-fondo">
+      <div
+        class="mx-auto flex max-w-6xl items-center justify-between gap-4 p-4"
+      >
       <a
         href={`/${locale}/`}
         class="flex items-center gap-2 font-display font-semibold"
@@ -142,29 +143,34 @@ const buildInfo = [`v${__APP_VERSION__}`, __COMMIT_DATE__, __COMMIT_HASH__]
           aria-label={t(dict, "idioma.selector")}>{t(dict, `idioma.${otro}`)}</a
         >
       </div>
+      </div>
     </header>
     <main>
       <Calculadora client:load locale={locale} dict={dict} />
     </main>
     <slot />
     <Faq dict={dict} />
-    <footer
-      class="mt-8 flex flex-col gap-2 border-t border-borde bg-fondo px-4 py-6 text-sm text-texto-suave"
-    >
-      {/* Metadatos de build (docs/01 §6): versión · fecha del commit · hash corto.
-          Los inyecta Vite en build; separadores de puntería (no copy traducible). */}
-      <span data-testid="version">{buildInfo}</span>
-      <p>{t(dict, "descargo")}</p>
-      <p>
-        {t(dict, "footer.derechos", { anio: __BUILD_YEAR__ })} ·{" "}
-        <a
-          href="https://www.yotfil.dev/"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="rounded text-accion underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-accion"
-          >{t(dict, "footer.creadoPor")}</a
-        >
-      </p>
+    <footer class="mt-8 border-t border-borde bg-fondo">
+      <div
+        class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 text-texto-suave"
+      >
+        <p class="text-sm">{t(dict, "descargo")}</p>
+        {/* Versión y copyright: metadatos secundarios, al final y en tono menor
+            (docs/01 §6). Los build vars los inyecta Vite; separadores de puntería. */}
+        <div class="flex flex-col gap-1 text-xs font-light">
+          <span data-testid="version">{buildInfo}</span>
+          <p>
+            {t(dict, "footer.derechos", { anio: __BUILD_YEAR__ })} ·{" "}
+            <a
+              href="https://www.yotfil.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="rounded font-normal text-accion underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-accion"
+              >{t(dict, "footer.creadoPor")}</a
+            >
+          </p>
+        </div>
+      </div>
     </footer>
     <script is:inline>
       // El selector conserva query + hash al cambiar de idioma (docs/07 §1).
