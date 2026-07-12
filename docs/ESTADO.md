@@ -4,9 +4,9 @@
 
 ## Próximo paso
 
-Módulo 3 (validación y tipos, TDD: esquemas Zod, rangos y clampeos).
-Leer `docs/02` §6 y `docs/04` §5 según la tabla de ruteo de CLAUDE.md.
-Antes: merge del PR de M2 (`feature/modulo-02-motor-nucleo` → `dev`).
+Módulo 4 (i18n base: rutas `/es/` `/en/`, diccionarios, `formatMoney`,
+redirección de raíz). Leer `docs/07` según la tabla de ruteo de CLAUDE.md.
+Antes: merge del PR de M3 (`feature/modulo-03-validacion-tipos` → `dev`).
 
 ## Checklist canónica de módulos
 
@@ -17,7 +17,7 @@ Antes: merge del PR de M2 (`feature/modulo-02-motor-nucleo` → `dev`).
       `.env.example`; script de versión en UI.
 - [x] **M2 · Motor núcleo** [TDD]: tasas equivalentes, simulación mensual,
       resultado con filas anuales y totales (`docs/02` §1–3, §7).
-- [ ] **M3 · Validación y tipos** [TDD]: esquemas Zod, rangos y clampeos
+- [x] **M3 · Validación y tipos** [TDD]: esquemas Zod, rangos y clampeos
       (`docs/02` §6), tipos compartidos core↔UI.
 - [ ] **M4 · i18n base**: rutas `/es/` `/en/`, diccionarios, `formatMoney`,
       redirección de raíz (`docs/07`).
@@ -86,6 +86,23 @@ Antes: merge del PR de M2 (`feature/modulo-02-motor-nucleo` → `dev`).
 - **M2 · Barrel de `core` = firma pública de `docs/01` §5**: las funciones de
   tasas (`docs/02` §1) quedan internas; los tests las importan por ruta relativa.
 
+- **M3 · Esquema Zod en `src/ui/esquema/`** (confirmado con Jef): `core` no
+  puede importar zod (cero dependencias) y el esquema solo lo consumen
+  formulario (M5) y URL (M18), ambos UI. Boundaries intactos.
+- **M3 · Errores = claves i18n** `errores.<campo>.numero|.rango|.entero`
+  (textos en M4, `docs/07`). Excepción: `aniosImpulso`/`aniosProteccion` solo
+  emiten `.rango` (consecuencia de `z.literal([1..5])`; también cubre no-entero).
+- **M3 · `frecuencia` con `.catch(12)`**: único campo cuyo fuera-de-rango es
+  default sin error, tal cual la tabla de `docs/02` §6. `duracionUnidad`
+  inválida también cae a `'a'` (docs/04 §5: param inválido → default).
+- **M3 · Sección a medias se omite sin error**: `aniosImpulso` sin
+  `aporteImpulso` (o viceversa; ídem protección) valida OK y `aEscenario`
+  no arma la sección. No hay regla cross-field en `docs/02` §6; la UI de
+  M5/M12/M13 gobierna cuándo los campos existen. 0 SÍ cuenta como presente.
+- **M3 · `duracion` relativa a `duracionUnidad`** (`a`: 1–50, `m`: 1–600,
+  máximo vía `superRefine` que acumula con los errores de otros campos);
+  `aEscenario` convierte a la unidad canónica `duracionMeses`.
+
 ## Trampas conocidas
 
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
@@ -102,6 +119,14 @@ Antes: merge del PR de M2 (`feature/modulo-02-motor-nucleo` → `dev`).
 - Los bloques del glide se cuentan DESDE EL FINAL (`docs/02` §5); contarlos
   desde el inicio de la protección da otra escalera en duraciones no múltiplo de 12.
 
+- `Number("") === 0` en JS: NO usar `z.coerce.number()` directo para campos de
+  formulario/URL — un input vacío se volvería 0 en vez de default. El esquema
+  neutraliza esto con el preprocess `aNumero` ("", null y "  " → ausente).
+- El param URL `dur` es SIEMPRE en meses y `durU` es solo para el radio
+  (`docs/04` §5): M18 no debe mapear `durU` → `duracionUnidad` al validar
+  (`dur=120&durU=a` fallaría el rango 1–50). Validar `dur` con unidad `'m'`
+  y usar `durU` únicamente para el estado del radio.
+
 - En `calcular`, `interesMes = balance * tasa(t)` (para la fila) y
   `balance = balance * (1 + tasa(t)) + aporte` no son bit-idénticos en float64:
   `Σ filas.interes` puede diferir de `interesTotal` por ULPs (muy por debajo de
@@ -109,6 +134,15 @@ Antes: merge del PR de M2 (`feature/modulo-02-motor-nucleo` → `dev`).
 
 ## Historial de sesiones
 
+- **2026-07-11 · Sesión 3 — M3 Validación y tipos** ✅. Rama
+  `feature/modulo-03-validacion-tipos` (5 commits granulares sobre `dev`).
+  TDD estricto en dos ciclos (esquema y mapper): tests primero, rojo
+  verificado, luego implementación. 121 tests verdes (98 nuevos: tabla §6
+  parametrizada por campo + duración por unidad + frecuencia-default +
+  `aEscenario`). zod 4.4.3. Revisión de diff con subagente fresco (probó 22
+  bordes de coerción URL con node): sin bloqueantes ni accionables; sus 3
+  notas se verificaron contra el código y quedaron como decisiones/trampas.
+  Pendiente humano: mergear PR a `dev`.
 - **2026-07-11 · Sesión 2 — M2 Motor núcleo** ✅. Rama
   `feature/modulo-02-motor-nucleo` (4 commits granulares sobre `dev`). TDD
   estricto: tests de tablas primero (rojo verificado), luego implementación.
