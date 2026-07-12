@@ -53,22 +53,38 @@ test.describe("SEO por idioma (docs/06 §3)", () => {
       expect(faq.mainEntity).toHaveLength(5);
     });
 
-    test(`/${locale}/: sección FAQ renderizada en HTML estático`, async ({
+    test(`/${locale}/: sección FAQ renderizada en HTML estático (5 colapsables)`, async ({
       page,
     }) => {
       await page.goto(`/${locale}/`);
       await expect(page.locator("#faq-titulo")).toBeVisible();
+      // Cada pregunta es un <details> con su <summary> (la pregunta) y su respuesta.
       await expect(
-        page.locator("section[aria-labelledby='faq-titulo'] dt"),
+        page.locator("section[aria-labelledby='faq-titulo'] details summary"),
       ).toHaveCount(5);
       await expect(
-        page.locator("section[aria-labelledby='faq-titulo'] dd"),
+        page.locator("section[aria-labelledby='faq-titulo'] details > p"),
       ).toHaveCount(5);
+      // El texto de la respuesta está en el DOM aunque el colapsable esté cerrado.
       const fragmento =
         locale === "es" ? "interés sobre interés" : "interest on interest";
       await expect(
         page.locator("section[aria-labelledby='faq-titulo']"),
       ).toContainText(fragmento);
+    });
+
+    test(`/${locale}/: la FAQ está colapsada y se expande al hacer clic`, async ({
+      page,
+    }) => {
+      await page.goto(`/${locale}/`);
+      const primera = page
+        .locator("section[aria-labelledby='faq-titulo'] details")
+        .first();
+      const respuesta = primera.locator("p");
+      // Cerrado por defecto → respuesta no visible; clic en la pregunta la muestra.
+      await expect(respuesta).toBeHidden();
+      await primera.locator("summary").click();
+      await expect(respuesta).toBeVisible();
     });
 
     test(`/${locale}/: sin snippet de GA4 cuando PUBLIC_GA4_ID está vacío`, async ({
