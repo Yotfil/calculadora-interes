@@ -308,7 +308,9 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
   sin `noindex`) se aplicó + test e2e. Trampa nueva: `prettier --write .` ensució
   el diff con reflow ajeno (revertido). Pendientes humanos: en_US, respuestas FAQ
   y aviso de cookies antes del 1.0.0. `favicon.svg` (aportado por Jef) se referenció
-  en el `<head>` de `Base.astro` y entró en el PR.
+  en el `<head>` de `Base.astro`. Mergeado a `dev` en dos PRs por dos pushes: #8
+  (M7 completo) y #9 (favicon). `main` sigue sin avanzar: el primer release (1.0.0)
+  es M8. 30 e2e finales (los 2 tests de favicon se sumaron a los 28 de M7).
 - **2026-07-11 · Sesión 6 — M6 UI resultados Básica** ✅. Rama
   `feature/modulo-06-ui-resultados` (10 commits granulares sobre `dev`). Tarea
   estructural multi-archivo. Se cableó `aEscenario→calcular→Resultado` en la ruta
