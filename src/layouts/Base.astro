@@ -22,6 +22,12 @@ const titulo = t(dict, "titulo");
 // GA4 solo si hay ID (docs/06 §2): sin ID no se inyecta el snippet, así que
 // `window.gtag` no existe y `track` es no-op en dev/tests.
 const ga4 = import.meta.env.PUBLIC_GA4_ID;
+
+// Línea de build del footer: versión · fecha · hash. Se filtran los segmentos
+// vacíos (build sin git) para no dejar separadores huérfanos ("· ·").
+const buildInfo = [`v${__APP_VERSION__}`, __COMMIT_DATE__, __COMMIT_HASH__]
+  .filter(Boolean)
+  .join(" · ");
 ---
 
 <!doctype html>
@@ -84,8 +90,16 @@ const ga4 = import.meta.env.PUBLIC_GA4_ID;
     </script>
   </head>
   <body class="bg-superficie font-cuerpo text-texto">
-    <header class="flex items-center justify-between gap-4 p-4">
-      <a href={`/${locale}/`} class="font-display font-semibold">{titulo}</a>
+    <header
+      class="flex items-center justify-between gap-4 border-b border-borde bg-fondo p-4"
+    >
+      <a
+        href={`/${locale}/`}
+        class="flex items-center gap-2 font-display font-semibold"
+      >
+        <img src="/favicon.svg" alt="" width="28" height="28" class="size-7" />
+        {titulo}
+      </a>
       <div class="flex items-center gap-4">
         <button
           id="toggle-tema"
@@ -134,9 +148,23 @@ const ga4 = import.meta.env.PUBLIC_GA4_ID;
     </main>
     <slot />
     <Faq dict={dict} />
-    <footer>
+    <footer
+      class="mt-8 flex flex-col gap-2 border-t border-borde bg-fondo px-4 py-6 text-sm text-texto-suave"
+    >
+      {/* Metadatos de build (docs/01 §6): versión · fecha del commit · hash corto.
+          Los inyecta Vite en build; separadores de puntería (no copy traducible). */}
+      <span data-testid="version">{buildInfo}</span>
       <p>{t(dict, "descargo")}</p>
-      <span data-testid="version">v{__APP_VERSION__}</span>
+      <p>
+        {t(dict, "footer.derechos", { anio: __BUILD_YEAR__ })} ·{" "}
+        <a
+          href="https://www.yotfil.dev/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded text-accion underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-accion"
+          >{t(dict, "footer.creadoPor")}</a
+        >
+      </p>
     </footer>
     <script is:inline>
       // El selector conserva query + hash al cambiar de idioma (docs/07 §1).
