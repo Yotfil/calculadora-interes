@@ -55,8 +55,14 @@ autocontenido) · cero costo de infraestructura.
 - [ ] Crear propiedad GA4 y obtener el ID de medición (va en `.env`, ver `docs/06`).
 - [ ] Alta del sitio en Google Search Console tras el primer deploy.
 - [ ] Crear el sitio en Netlify y conectar el repo (deploy de `main`).
-- [ ] Decidir dominio definitivo (afecta hreflang y canonical, ver `docs/06`).
+- [ ] Decidir dominio definitivo (M8): fijar `site` en `astro.config.mjs` **y** la
+      línea `Sitemap:` de `public/robots.txt`; hoy ambos usan un placeholder
+      (`https://calculadora-interes.example`). Afecta hreflang, canonical y sitemap.
 - [ ] Revisión humana de la traducción `en.json` antes del release 1.0.0.
+- [ ] Revisión humana de las 5 respuestas de FAQ (`faq.r1`–`faq.r5`, es + en) antes
+      del release 1.0.0 (redactadas en M7 siguiendo `docs/07` §5).
+- [ ] Definir aviso de cookies/consentimiento según lo exija la configuración de GA4
+      (`docs/06` §2); GA4 solo se activa si `PUBLIC_GA4_ID` está presente.
 
 ## Arranque con Claude Code (handoff)
 
