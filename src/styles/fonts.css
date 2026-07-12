@@ -1,0 +1,21 @@
+/*
+ * Fuentes self-hosted (docs/05 §3) — sin requests a Google Fonts (SEO/CWV).
+ * Subset latin (woff2) de las fuentes variables Inter y Lexend, servidas desde
+ * /public/fonts. `font-weight: 100 900` porque cada archivo es la fuente
+ * variable completa; `font-display: swap` evita texto invisible en la carga.
+ */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Lexend";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/lexend-latin.woff2") format("woff2");
+}

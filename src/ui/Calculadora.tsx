@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 
+import { calcular as calcularMotor } from "../core";
+import type { Resultado as ResultadoMotor } from "../core";
 import type { Diccionario } from "../i18n/diccionario";
 import type { Locale } from "../i18n/locale";
 import { t } from "../i18n/t";
@@ -8,9 +10,29 @@ import { t } from "../i18n/t";
 import Campo from "./Campo";
 import CampoDuracion from "./CampoDuracion";
 import CampoFrecuencia from "./CampoFrecuencia";
+import EstadoVacio from "./EstadoVacio";
+import Resultado from "./Resultado";
 import Tabs from "./Tabs";
+import { aEscenario } from "./esquema/a-escenario";
 import { esquemaFormulario } from "./esquema/formulario";
 import { mapearError } from "./esquema/mapear-error";
+
+// Lo que la ruta de éxito de Calcular necesita para pintar la zona de resultados.
+interface Salida {
+  resultado: ResultadoMotor;
+  capitalInicial: number;
+  duracion: number;
+  duracionUnidad: "a" | "m";
+  animar: boolean;
+}
+
+// prefers-reduced-motion (docs/05 §4): sin animación firma ni scroll suave.
+function prefiereReducir(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
 
 interface Props {
   locale: Locale;
@@ -45,6 +67,19 @@ export default function Calculadora({ locale, dict }: Props) {
   // Clave de error del esquema por campo (`errores.<campo>.<sufijo>`), no el texto:
   // así el mensaje de `duracion` se recalcula con la unidad actual al renderizar.
   const [errores, setErrores] = useState<Record<string, string>>({});
+  // null hasta el primer cálculo válido (estado vacío, docs/04 §4).
+  const [salida, setSalida] = useState<Salida | null>(null);
+  const resultadoRef = useRef<HTMLDivElement>(null);
+
+  // Al calcular, scroll al resultado (docs/04 §1, docs/05 §4.3): suave, o salto
+  // instantáneo con reduced-motion. En desktop ya está a la vista (columna fija).
+  useEffect(() => {
+    if (!salida) return;
+    resultadoRef.current?.scrollIntoView({
+      behavior: salida.animar ? "smooth" : "auto",
+      block: "start",
+    });
+  }, [salida]);
 
   // Corre el esquema completo y devuelve la primera clave de error por campo.
   function erroresDe(vals: Record<string, string>): Record<string, string> {
@@ -97,17 +132,37 @@ export default function Calculadora({ locale, dict }: Props) {
   }
 
   // Calcular nunca se deshabilita (CLAUDE.md §8): con errores hace scroll+focus al
-  // primero; sin errores solo limpia. El cálculo/render es M6.
+  // primero, sin calcular; en éxito arma el escenario, corre el motor y pinta.
   function calcular(e: FormEvent) {
     e.preventDefault();
-    const todos = erroresDe(valores);
-    setErrores(todos);
-    const primero = ORDEN_CAMPOS.find((c) => todos[c]);
-    if (primero) {
-      const el = document.getElementById(`campo-${primero}`);
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-      el?.focus();
+    const parsed = esquemaFormulario.safeParse(valores);
+    if (!parsed.success) {
+      const acc: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const campo = String(issue.path[0]);
+        if (!(campo in acc)) acc[campo] = issue.message;
+      }
+      setErrores(acc);
+      const primero = ORDEN_CAMPOS.find((c) => acc[c]);
+      if (primero) {
+        const el = document.getElementById(`campo-${primero}`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        el?.focus();
+      }
+      return;
     }
+    setErrores({});
+    const datos = parsed.data;
+    // El tab define qué entra al motor (docs/04 §2): en Básica solo pasos 1–4;
+    // las secciones de Avanzada/Experto llegan en M12–M13.
+    const resultado = calcularMotor(aEscenario(datos));
+    setSalida({
+      resultado,
+      capitalInicial: datos.capitalInicial,
+      duracion: datos.duracion,
+      duracionUnidad: datos.duracionUnidad,
+      animar: !prefiereReducir(),
+    });
   }
 
   const tabs = [
@@ -121,105 +176,133 @@ export default function Calculadora({ locale, dict }: Props) {
       data-testid="calculadora"
       lang={locale}
       aria-label={t(dict, "titulo")}
-      className="mx-auto flex max-w-xl flex-col gap-6 p-4"
+      className="mx-auto grid max-w-6xl gap-8 p-4 lg:grid-cols-2"
     >
-      <Tabs
-        tabs={tabs}
-        activo={tab}
-        etiqueta={t(dict, "tabs.aria")}
-        idPanel="panel-formulario"
-        onCambio={setTab}
-      />
+      {/* Desktop (≥1024): formulario izquierda, resultados fijos a la derecha
+          (docs/04 §1). Mobile: resultados debajo con scroll al calcular. */}
+      <div className="flex flex-col gap-6">
+        <Tabs
+          tabs={tabs}
+          activo={tab}
+          etiqueta={t(dict, "tabs.aria")}
+          idPanel="panel-formulario"
+          onCambio={setTab}
+        />
 
-      <div role="tabpanel" id="panel-formulario" aria-labelledby={`tab-${tab}`}>
-        {/* En M5 los tres tabs comparten los pasos 1–4; las secciones de Fase 2
+        <div
+          role="tabpanel"
+          id="panel-formulario"
+          aria-labelledby={`tab-${tab}`}
+        >
+          {/* En M5 los tres tabs comparten los pasos 1–4; las secciones de Fase 2
             (impulso/protección/varianza/meta) llegan en M12–M13 (docs/04 §2). */}
-        <form onSubmit={calcular} noValidate className="flex flex-col gap-6">
-          <section aria-labelledby="paso-1" className="flex flex-col gap-4">
-            <h2 id="paso-1" className="text-lg font-semibold">
-              {t(dict, "pasos.paso1")}
-            </h2>
-            <Campo
-              campo="capitalInicial"
-              label={t(dict, "campos.capitalInicial.label")}
-              ayuda={t(dict, "campos.capitalInicial.ayuda")}
-              valor={valores.capitalInicial}
-              error={mensaje("capitalInicial")}
-              onCambio={(v) => cambiar("capitalInicial", v)}
-              onBlur={() => validarCampo("capitalInicial")}
-            />
-          </section>
+          <form onSubmit={calcular} noValidate className="flex flex-col gap-6">
+            <section aria-labelledby="paso-1" className="flex flex-col gap-4">
+              <h2 id="paso-1" className="text-lg font-semibold">
+                {t(dict, "pasos.paso1")}
+              </h2>
+              <Campo
+                campo="capitalInicial"
+                label={t(dict, "campos.capitalInicial.label")}
+                ayuda={t(dict, "campos.capitalInicial.ayuda")}
+                valor={valores.capitalInicial}
+                error={mensaje("capitalInicial")}
+                onCambio={(v) => cambiar("capitalInicial", v)}
+                onBlur={() => validarCampo("capitalInicial")}
+              />
+            </section>
 
-          <section aria-labelledby="paso-2" className="flex flex-col gap-4">
-            <h2 id="paso-2" className="text-lg font-semibold">
-              {t(dict, "pasos.paso2")}
-            </h2>
-            <Campo
-              campo="aporteRegimen"
-              label={t(dict, "campos.aporteRegimen.label")}
-              ayuda={t(dict, "campos.aporteRegimen.ayuda")}
-              valor={valores.aporteRegimen}
-              error={mensaje("aporteRegimen")}
-              onCambio={(v) => cambiar("aporteRegimen", v)}
-              onBlur={() => validarCampo("aporteRegimen")}
-            />
-          </section>
+            <section aria-labelledby="paso-2" className="flex flex-col gap-4">
+              <h2 id="paso-2" className="text-lg font-semibold">
+                {t(dict, "pasos.paso2")}
+              </h2>
+              <Campo
+                campo="aporteRegimen"
+                label={t(dict, "campos.aporteRegimen.label")}
+                ayuda={t(dict, "campos.aporteRegimen.ayuda")}
+                valor={valores.aporteRegimen}
+                error={mensaje("aporteRegimen")}
+                onCambio={(v) => cambiar("aporteRegimen", v)}
+                onBlur={() => validarCampo("aporteRegimen")}
+              />
+            </section>
 
-          <section aria-labelledby="paso-3" className="flex flex-col gap-4">
-            <h2 id="paso-3" className="text-lg font-semibold">
-              {t(dict, "pasos.paso3")}
-            </h2>
-            <CampoDuracion
-              label={t(dict, "campos.duracion.label")}
-              ayuda={t(dict, "campos.duracion.ayuda")}
-              unidadLabels={{
-                anios: t(dict, "campos.duracion.unidad.anios"),
-                meses: t(dict, "campos.duracion.unidad.meses"),
-              }}
-              valor={valores.duracion}
-              unidad={valores.duracionUnidad as "a" | "m"}
-              error={mensaje("duracion")}
-              onCambio={(v) => cambiar("duracion", v)}
-              onUnidad={cambiarUnidad}
-              onBlur={() => validarCampo("duracion")}
-            />
-          </section>
+            <section aria-labelledby="paso-3" className="flex flex-col gap-4">
+              <h2 id="paso-3" className="text-lg font-semibold">
+                {t(dict, "pasos.paso3")}
+              </h2>
+              <CampoDuracion
+                label={t(dict, "campos.duracion.label")}
+                ayuda={t(dict, "campos.duracion.ayuda")}
+                unidadLabels={{
+                  anios: t(dict, "campos.duracion.unidad.anios"),
+                  meses: t(dict, "campos.duracion.unidad.meses"),
+                }}
+                valor={valores.duracion}
+                unidad={valores.duracionUnidad as "a" | "m"}
+                error={mensaje("duracion")}
+                onCambio={(v) => cambiar("duracion", v)}
+                onUnidad={cambiarUnidad}
+                onBlur={() => validarCampo("duracion")}
+              />
+            </section>
 
-          <section aria-labelledby="paso-4" className="flex flex-col gap-4">
-            <h2 id="paso-4" className="text-lg font-semibold">
-              {t(dict, "pasos.paso4")}
-            </h2>
-            <Campo
-              campo="tasaNominalAnual"
-              label={t(dict, "campos.tasa.label")}
-              ayuda={t(dict, "campos.tasa.ayuda")}
-              valor={valores.tasaNominalAnual}
-              error={mensaje("tasaNominalAnual")}
-              onCambio={(v) => cambiar("tasaNominalAnual", v)}
-              onBlur={() => validarCampo("tasaNominalAnual")}
-            />
-            <CampoFrecuencia
-              label={t(dict, "campos.frecuencia.label")}
-              ayuda={t(dict, "campos.frecuencia.ayuda")}
-              opciones={{
-                anual: t(dict, "campos.frecuencia.opciones.anual"),
-                semestral: t(dict, "campos.frecuencia.opciones.semestral"),
-                trimestral: t(dict, "campos.frecuencia.opciones.trimestral"),
-                mensual: t(dict, "campos.frecuencia.opciones.mensual"),
-              }}
-              valor={valores.frecuencia}
-              onCambio={(v) => cambiar("frecuencia", v)}
-            />
-          </section>
+            <section aria-labelledby="paso-4" className="flex flex-col gap-4">
+              <h2 id="paso-4" className="text-lg font-semibold">
+                {t(dict, "pasos.paso4")}
+              </h2>
+              <Campo
+                campo="tasaNominalAnual"
+                label={t(dict, "campos.tasa.label")}
+                ayuda={t(dict, "campos.tasa.ayuda")}
+                valor={valores.tasaNominalAnual}
+                error={mensaje("tasaNominalAnual")}
+                onCambio={(v) => cambiar("tasaNominalAnual", v)}
+                onBlur={() => validarCampo("tasaNominalAnual")}
+              />
+              <CampoFrecuencia
+                label={t(dict, "campos.frecuencia.label")}
+                ayuda={t(dict, "campos.frecuencia.ayuda")}
+                opciones={{
+                  anual: t(dict, "campos.frecuencia.opciones.anual"),
+                  semestral: t(dict, "campos.frecuencia.opciones.semestral"),
+                  trimestral: t(dict, "campos.frecuencia.opciones.trimestral"),
+                  mensual: t(dict, "campos.frecuencia.opciones.mensual"),
+                }}
+                valor={valores.frecuencia}
+                onCambio={(v) => cambiar("frecuencia", v)}
+              />
+            </section>
 
-          <button
-            type="submit"
-            data-testid="boton-calcular"
-            className="rounded bg-accion px-4 py-2 font-semibold text-superficie focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accion"
-          >
-            {t(dict, "acciones.calcular")}
-          </button>
-        </form>
+            <button
+              type="submit"
+              data-testid="boton-calcular"
+              className="rounded bg-accion px-4 py-2 font-semibold text-superficie focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accion"
+            >
+              {t(dict, "acciones.calcular")}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div
+        ref={resultadoRef}
+        data-testid="zona-resultados"
+        className="lg:sticky lg:top-4 lg:self-start"
+      >
+        {salida ? (
+          <Resultado
+            resultado={salida.resultado}
+            capitalInicial={salida.capitalInicial}
+            duracion={salida.duracion}
+            duracionUnidad={salida.duracionUnidad}
+            locale={locale}
+            dict={dict}
+            animar={salida.animar}
+          />
+        ) : (
+          <EstadoVacio dict={dict} />
+        )}
       </div>
     </section>
   );

@@ -24,17 +24,83 @@ const titulo = t(dict, "titulo");
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{titulo}</title>
+    <link
+      rel="preload"
+      href="/fonts/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/lexend-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script is:inline>
+      // Anti-FOUC (docs/05 §2): fija el tema antes del primer paint. Prioridad
+      // elección manual (localStorage) > preferencia del sistema. El tema NO es
+      // estado de formulario, así que persistirlo no viola docs/04 §3.
+      (function () {
+        try {
+          const guardado = localStorage.getItem("tema");
+          const oscuro =
+            guardado === "dark" ||
+            (guardado === null &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = oscuro ? "dark" : "light";
+        } catch {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
   </head>
-  <body class="bg-superficie text-texto">
-    <header>
-      <a href={`/${locale}/`}>{titulo}</a>
-      <a
-        id="selector-idioma"
-        data-testid="selector-idioma"
-        href={`/${otro}/`}
-        hreflang={otro}
-        aria-label={t(dict, "idioma.selector")}>{t(dict, `idioma.${otro}`)}</a
-      >
+  <body class="bg-superficie font-cuerpo text-texto">
+    <header class="flex items-center justify-between gap-4 p-4">
+      <a href={`/${locale}/`} class="font-display font-semibold">{titulo}</a>
+      <div class="flex items-center gap-4">
+        <button
+          id="toggle-tema"
+          data-testid="toggle-tema"
+          type="button"
+          aria-label={t(dict, "tema.toggle")}
+          class="rounded p-1 text-texto-suave focus-visible:outline-2 focus-visible:outline-accion"
+        >
+          {/* Iconos decorativos; el CSS muestra el que corresponde al tema:
+              luna en claro (ir a oscuro), sol en oscuro (ir a claro). */}
+          <svg
+            class="icono-luna size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path>
+          </svg>
+          <svg
+            class="icono-sol size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="4"></circle>
+            <path
+              d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"
+            ></path>
+          </svg>
+        </button>
+        <a
+          id="selector-idioma"
+          data-testid="selector-idioma"
+          href={`/${otro}/`}
+          hreflang={otro}
+          aria-label={t(dict, "idioma.selector")}>{t(dict, `idioma.${otro}`)}</a
+        >
+      </div>
     </header>
     <main>
       <Calculadora client:load locale={locale} dict={dict} />
@@ -52,6 +118,32 @@ const titulo = t(dict, "titulo");
           "href",
           sel.getAttribute("href") + location.search + location.hash,
         );
+
+      // Toggle de tema: alterna data-theme y persiste la elección manual.
+      const toggle = document.getElementById("toggle-tema");
+      if (toggle)
+        toggle.addEventListener("click", () => {
+          const oscuro = document.documentElement.dataset.theme === "dark";
+          const nuevo = oscuro ? "light" : "dark";
+          document.documentElement.dataset.theme = nuevo;
+          try {
+            localStorage.setItem("tema", nuevo);
+          } catch {
+            /* sin persistencia si el storage no está disponible */
+          }
+        });
     </script>
+    <style is:global>
+      /* Muestra el icono del tema activo (luna en claro, sol en oscuro). */
+      .icono-sol {
+        display: none;
+      }
+      [data-theme="dark"] .icono-luna {
+        display: none;
+      }
+      [data-theme="dark"] .icono-sol {
+        display: block;
+      }
+    </style>
   </body>
 </html>
