@@ -4,20 +4,20 @@
 
 ## Próximo paso
 
-Módulo 8 (Deploy + release 1.0.0): crear el sitio en Netlify conectado al repo
-(build `astro build`, publish `dist/`), **fijar el dominio real** —hoy placeholder
-`https://calculadora-interes.example` en DOS sitios: `site` de `astro.config.mjs`
-y la línea `Sitemap:` de `public/robots.txt`—, configurar `PUBLIC_GA4_ID` en las
-env vars de Netlify, y ejecutar el release (rama `release/1.0.0` desde dev con solo
-el bump `npm version minor --no-git-tag-version`, merge a dev, luego dev→main).
-Alta en Search Console tras el deploy y envío del sitemap. Leer `docs/01` §6.
-**Base que deja M7 para M8:** SEO on-page completo (description/canonical/hreflang
-recíproco + x-default→/en/ / JSON-LD `WebApplication`+`FAQPage` por idioma, FAQ
-indexable al pie, `sitemap-index.xml` + `robots.txt`, raíz con `noindex`). GA4
-tras `src/analytics/track` (no-op sin ID); SOLO el evento `calcular` cableado (los
-otros 3 esperan su feature: M16/M17/M18). Bundle isla 165,8 KB gzip < 200.
-Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
-1.0.0; definir aviso de cookies según la config de GA4.
+Arranca la **Fase 2** (release 1.1.0). Módulo 9 (Motor escalonado) [TDD]: leer
+`docs/02` §4 + `docs/ESTADO.md`. Tabla de casos cerrada → va directo a TDD (tests
+primero, rojo, implementación; tolerancia ±0,01 USD). El impulso escalonado
+construye el hook `aporte(t)` dentro de `calcular` (el bucle NO cambia; decisión
+de M2). Firma pública ya declarada: `Escenario.impulso?: { anios, aporteMensual }`
+(`docs/01` §5).
+**Estado del deploy (M8):** dominio real `https://helenguevara.com` fijado en
+config/robots/e2e; `netlify.toml` versionado (`astro build`→`dist`, Node 22);
+release 1.0.0 cortado (bump only en `release/1.0.0`). **Trabajo humano pendiente
+de Jef** (no bloquea a Claude): mergear los 3 PRs en orden (feature→dev,
+release→dev, LUEGO dev→main), crear el sitio en Netlify + apuntar el DNS de
+helenguevara.com + HTTPS, alta en Search Console + envío del sitemap. GA4 diferido
+(PUBLIC_GA4_ID vacío → analítica off → sin aviso de cookies en 1.0.0). Gates
+humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 ## Checklist canónica de módulos
 
@@ -39,7 +39,9 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
       precargado (E1/F2) diferido a M12 (E1 usa impulso de Avanzada).
 - [x] **M7 · SEO + analítica**: metas, hreflang, schema.org, GA4 (`calcular`
       cableado; los otros 3 con su feature), sitemap + robots (`docs/06`).
-- [ ] **M8 · Deploy**: Netlify + release 1.0.0.
+- [x] **M8 · Deploy**: dominio real `helenguevara.com` (config/robots/e2e),
+      `netlify.toml` versionado, release 1.0.0 cortado. Netlify/DNS/Search Console
+      = trabajo humano de Jef.
 
 ### Fase 2 — Avanzada y Experto (release 1.1.0)
 
@@ -281,6 +283,18 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
   añadido de Fase 2 debe medirse contra ese margen. Tras M7 sigue en 165,8 KB
   (gtag.js es script externo async, no entra al bundle; el wrapper `track` pesa
   bytes).
+- El dominio de producción se espeja en TRES sitios, no dos: `site` de
+  `astro.config.mjs`, la línea `Sitemap:` de `public/robots.txt` Y la constante
+  `SITE` de `e2e/seo.spec.ts` (canonical/hreflang son absolutos, el e2e los
+  compara contra ese host, no contra `localhost:4321`). Cambiar el dominio en solo
+  dos rompe 3 tests de `seo.spec.ts`.
+- Netlify no tiene el Node correcto por default: Astro 7 exige ≥22.12 y el repo no
+  tiene `engines`/`.nvmrc`. El pin vive en `netlify.toml` (`NODE_VERSION = "22"`);
+  sin él el build de Netlify podría fallar.
+- `npm version minor` desde `0.1.0` da `0.2.0`, NO `1.0.0`. Para el release de
+  lanzamiento se usó `npm version 1.0.0` explícito (la regla §6 "minor = features"
+  no aplica al primer salto a 1.0.0). Los futuros releases sí siguen minor/patch.
+
 - `npm run format` (`prettier --write .`) reformatea TODO el árbol; en dev había
   archivos no prettier-clean, así que ensució el diff de M7 con reflow ajeno
   (core, esquema, tests). Se revirtieron con `git checkout dev -- <archivos>`.
@@ -288,6 +302,30 @@ Pendientes humanos (README): revisar en_US y las 5 respuestas de FAQ antes del
 
 ## Historial de sesiones
 
+- **2026-07-12 · Sesión 8 — M8 Deploy + release 1.0.0** ✅. Rama
+  `feature/modulo-08-deploy` (2 commits) + `release/1.0.0` (1 commit), ambas sobre
+  `dev`. Plan Mode. Tarea de infra + release, sin lógica de producto. Dominio real
+  decidido con Jef: `https://helenguevara.com` (normalizado a https sin barra
+  final: Netlify fuerza HTTPS y ese es el canonical correcto; Jef tecleó http://).
+  Placeholder `calculadora-interes.example` reemplazado en los TRES sitios que lo
+  espejan (config, robots, e2e `seo.spec.ts` — este último era el tercero, no
+  contemplado en el plan; su omisión rompía 3 tests de SEO). `netlify.toml`
+  versionado (confirmado con Jef): `command="astro build"`, `publish="dist"`,
+  `NODE_VERSION="22"` (Astro 7 exige ≥22.12; sin engines/.nvmrc el default de
+  Netlify podría romper el build). Sin GA4 en 1.0.0 (confirmado): `PUBLIC_GA4_ID`
+  vacío → analítica off → sin aviso de cookies necesario. Release: rama
+  `release/1.0.0` desde dev con SOLO el bump (§6). `npm version minor` daría 0.2.0,
+  así que se usó `npm version 1.0.0` explícito (el objetivo 1.0.0 es inequívoco:
+  nombre de rama + checklist Fase 1). Footer del build muestra `v1.0.0`. 142 unit +
+  36 e2e verdes, lint + build verdes, `grep` del `dist/` sin placeholder
+  (canonical/hreflang/sitemap/robots en el dominio real, x-default→/en/). Revisión
+  de diff con subagente fresco: diffs correctos y limpios; su BLOQUEANTE es de
+  ORDEN de merge (las dos ramas salen del mismo commit de dev, así que ambas deben
+  entrar a dev ANTES de dev→main o producción saldría con placeholder — ya anotado
+  en el plan y en la entrega de PRs, no es defecto de contenido); su ACCIONABLE
+  (README con lenguaje de placeholder) se aplicó. **Claude no mergea**: entregados
+  los 3 links de PR (feature→dev, release→dev, dev→main). Trabajo humano de Jef:
+  Netlify + DNS + Search Console. `main` avanza por primera vez con este release.
 - **2026-07-12 · Extra (post-M7) — Ajustes de UI (Snowball, anchos, FAQ colapsable)** ✅.
   Rama `feature/ui-header-footer-faq` (base `dev`). Tarea de UI NO planeada (pedido de Jef
   antes del deploy). App renombrada a "Snowball: …" (clave `titulo` es+en; se propaga a
