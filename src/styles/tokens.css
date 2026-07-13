@@ -29,6 +29,7 @@
   --teal-300: #7edcd2;
   --indigo-500: #6366f1;
   --indigo-300: #a5b4fc;
+  --amber-700: #b45309;
   --amber-600: #d97706;
   --amber-300: #fcd34d;
   --rojo-600: #dc2626;
@@ -52,6 +53,7 @@
   --sem-accion: var(--teal-700); /* CTAs y foco (docs/05 §2) */
   --sem-inicial: var(--indigo-500); /* torta/barras/tabla: capital inicial */
   --sem-aportes: var(--amber-600); /* torta/barras/tabla: aportes */
+  --sem-aportes-texto: var(--amber-700); /* variante de texto (AA ≥ 4,5): 4,54 sobre fondo */
   --sem-interes: var(--teal-600); /* torta/barras/tabla: interés (familia teal) */
   --sem-error: var(--rojo-600);
   --sem-exito: var(--verde-700);
@@ -72,6 +74,7 @@
   --sem-accion: var(--teal-500);
   --sem-inicial: var(--indigo-300);
   --sem-aportes: var(--amber-300);
+  --sem-aportes-texto: var(--amber-300);
   --sem-interes: var(--teal-300);
   --sem-error: var(--rojo-400);
   --sem-exito: var(--verde-400);
@@ -87,6 +90,7 @@
     --sem-accion: var(--teal-500);
     --sem-inicial: var(--indigo-300);
     --sem-aportes: var(--amber-300);
+    --sem-aportes-texto: var(--amber-300);
     --sem-interes: var(--teal-300);
     --sem-error: var(--rojo-400);
     --sem-exito: var(--verde-400);
@@ -108,6 +112,7 @@
   --color-accion: var(--sem-accion);
   --color-inicial: var(--sem-inicial);
   --color-aportes: var(--sem-aportes);
+  --color-aportes-texto: var(--sem-aportes-texto);
   --color-interes: var(--sem-interes);
   --color-error: var(--sem-error);
   --color-exito: var(--sem-exito);

@@ -10,6 +10,11 @@ import {
   posSignificativo,
   separadorDecimal,
 } from "./miles";
+import { conRealce } from "./realce";
+
+// Clase del color de acento que vincula por color los campos de aporte
+// (docs/05 §2): variante de texto del token "aportes", AA en ambos temas.
+const REALCE = "text-aportes-texto";
 
 // useLayoutEffect avisa por consola en SSR (Astro renderiza la isla en el
 // servidor); en Node se usa useEffect, que allí es igual de inerte.
@@ -33,6 +38,8 @@ interface Props {
   moneda?: string;
   /** Tooltip del adorno de moneda (aviso de "próximamente otras monedas"). */
   monedaTooltip?: string;
+  /** Tiñe el label con el color de acento (vínculo Impulso ↔ Aporte mensual). */
+  resaltarLabel?: boolean;
   onCambio: (valor: string) => void;
   onBlur: () => void;
 }
@@ -54,6 +61,7 @@ export default function Campo({
   locale,
   moneda,
   monedaTooltip,
+  resaltarLabel = false,
   onCambio,
   onBlur,
 }: Props) {
@@ -137,11 +145,14 @@ export default function Campo({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="font-medium">
+      <label
+        htmlFor={id}
+        className={resaltarLabel ? "font-medium text-aportes-texto" : "font-medium"}
+      >
         {label}
       </label>
       <p id={idAyuda} className="text-sm text-texto-suave">
-        {ayuda}
+        {conRealce(ayuda, REALCE)}
       </p>
       {moneda ? (
         <div className="flex items-stretch">

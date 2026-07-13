@@ -89,4 +89,59 @@ test.describe("tab Avanzada — impulso inicial (M12)", () => {
     await page.getByTestId("campo-duracion").fill("3");
     await expect(aviso).toHaveText("Tu impulso cubre todo el período.");
   });
+
+  test("vínculo Impulso ↔ Aporte mensual: color al expandir y copy dinámico con N (docs/07 §3)", async ({
+    page,
+  }) => {
+    await abrir(page, "/es/");
+    await page.getByTestId("tab-avanzada").click();
+
+    const labelAporte = page.locator('label[for="campo-aporteRegimen"]');
+    const ayudaAporte = page.locator("#campo-aporteRegimen-ayuda");
+    const ayudaImpulso = page.locator("#campo-aporteImpulso-ayuda");
+
+    // Colapsable cerrado: sin realce en el label ni copy dinámico.
+    await expect(labelAporte).not.toHaveClass(/text-aportes-texto/);
+    await expect(ayudaAporte).toHaveText("Lo que agregas cada mes. Se abona al final de cada mes.");
+
+    // Al expandir: el label de Aporte mensual se tiñe de acento y en la ayuda
+    // del campo del impulso "Aporte mensual" aparece resaltado (mismo color).
+    await page.getByTestId("seccion-impulso-toggle").click();
+    await expect(labelAporte).toHaveClass(/text-aportes-texto/);
+    await expect(
+      ayudaImpulso.locator("span.text-aportes-texto"),
+    ).toHaveText("Aporte mensual");
+    await expect(ayudaImpulso).toHaveText("Reemplaza al Aporte mensual solo durante esos años.");
+
+    // Con el impulso APLICADO (ambos campos, 3 años < 10 de duración) el copy
+    // nombra los años y el fragmento va resaltado en ambos mensajes.
+    await page.getByTestId("campo-aniosImpulso").fill("3");
+    await page.getByTestId("campo-aporteImpulso").fill("1000");
+    await expect(ayudaImpulso).toHaveText(
+      "Reemplaza al Aporte mensual durante los primeros 3 años.",
+    );
+    await expect(ayudaAporte).toHaveText(
+      "Lo que agregas cada mes, tras los primeros 3 años de impulso. Se abona al final de cada mes.",
+    );
+    await expect(
+      ayudaAporte.locator("span.text-aportes-texto"),
+    ).toHaveText("los primeros 3 años");
+
+    // N=1 → singular "el primer año".
+    await page.getByTestId("campo-aniosImpulso").fill("1");
+    await expect(ayudaImpulso).toHaveText(
+      "Reemplaza al Aporte mensual durante el primer año.",
+    );
+    await expect(ayudaAporte).toHaveText(
+      "Lo que agregas cada mes, tras el primer año de impulso. Se abona al final de cada mes.",
+    );
+
+    // Al COLAPSAR (con los valores aún puestos) las señales del vínculo se
+    // retiran juntas: el label se destiñe y el Aporte mensual vuelve al copy
+    // base, sin fragmento resaltado (el impulso ya no está a la vista).
+    await page.getByTestId("seccion-impulso-toggle").click();
+    await expect(labelAporte).not.toHaveClass(/text-aportes-texto/);
+    await expect(ayudaAporte).toHaveText("Lo que agregas cada mes. Se abona al final de cada mes.");
+    await expect(ayudaAporte.locator("span.text-aportes-texto")).toHaveCount(0);
+  });
 });

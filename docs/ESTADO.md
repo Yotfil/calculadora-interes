@@ -9,7 +9,10 @@
 completa** (Avanzada + Experto). `main` avanzó por segunda vez con este release.
 
 Tras el release, Jef abrió un tramo de **incidencias y mejoras de UI** fuera de
-la checklist (rama `feature/incidencias-ui-usd-miles`, ver historial 2026-07-13).
+la checklist: `feature/incidencias-ui-usd-miles` y, encima de ella,
+`feature/vinculo-impulso-aporte` (vínculo por color Impulso↔Aporte). Ambas van a
+`dev` por PR; la segunda **se mergea después** de la primera (stack). Ver
+historial 2026-07-13.
 
 Sigue la **Fase 3** con **M14 · motor modo meta** [TDD]: leer `docs/ESTADO.md` +
 `docs/03` §1. Tabla de casos cerrada → TDD directo (tests primero, verlos fallar,
@@ -370,6 +373,24 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
   compartidos en `src/ui/tooltipEstilos.ts` (torta y barras); el default de
   Recharts (blanco) era ilegible en oscuro. Cualquier gráfico futuro debe
   reusar ese módulo.
+- **Vínculo Impulso↔Aporte (2026-07-13) · Color = variante de texto del token
+  aportes**: el `--sem-aportes` está tuneado como objeto gráfico (≥3) y NO llega
+  a 4.5 como texto; se añadió `--sem-aportes-texto` (ámbar-700 #b45309 claro,
+  4.54:1 ✓ / ámbar-300 oscuro). Jef propuso #ec9b52 pero da 2.03:1 sobre el
+  fondo claro → descartado para texto. Reusa el color que YA significa "aportes".
+- **Vínculo Impulso↔Aporte · Markup de realce `[[ ]]`**: `conRealce`
+  (`src/ui/realce.tsx`, espeja a `conNegritas`) envuelve tramos en un `<span>`
+  con la clase de acento. El copy de docs/07 usa `[[ ]]` para el color, `**` para
+  negrita (dos markups distintos, dos renderers). `Campo` pasa SIEMPRE la ayuda
+  por `conRealce` (no-op sin markup).
+- **Vínculo Impulso↔Aporte · Copy dinámico gateado a "impulso aplica"**: las
+  ayudas con N (`campos.*.ayudaImpulso`) solo se muestran cuando el impulso
+  aplica de verdad (ambos campos + `anios*12 < duracionMeses`, mismo criterio
+  que el aviso "clampeada" pero negado). Si solo están los años → copy base (lo
+  cubre el aviso "incompleta"). `periodo` pluraliza por `N===1`
+  (`campos.impulso.periodo.singular|plural`). `{aporte}` se interpola con el
+  label de `aporteRegimen` (fuente única del literal). El label de aporteRegimen
+  se tiñe con `resaltarLabel` = `tab !== "basica" && impulsoAbierto`.
 
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
   `root` en esta máquina y algunos installs fallan con EACCES/EEXIST.
@@ -450,6 +471,30 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
 
 ## Historial de sesiones
 
+- **2026-07-13 · Extra (post-1.1.0) — Vínculo Impulso ↔ Aporte mensual** ✅. Rama
+  `feature/vinculo-impulso-aporte` (5 commits granulares, STACK sobre
+  `feature/incidencias-ui-usd-miles` porque comparten `Campo.tsx` y el copy del
+  impulso; se mergea DESPUÉS de esa). Plan Mode + 2 decisiones de Jef (color =
+  variante de texto del token `aportes`, NO su #ec9b52 que da 2.03:1; copy
+  dinámico solo cuando el impulso aplica de verdad). Problema: usuarios no captan
+  que el impulso REEMPLAZA el aporte (no suma). Solución: color compartido (label
+  de Aporte mensual + referencia en la ayuda del impulso se tiñen al expandir la
+  sección) y copy dinámico que nombra los años reales (N) con el fragmento
+  resaltado. Commits: (1) token `--sem-aportes-texto`; (2) `conRealce`
+  (`realce.tsx`) + test; (3) `Campo` pasa la ayuda por `conRealce` + prop
+  `resaltarLabel`; (4) copy (`ayudaImpulso`/`periodo` es+en) + cableado en
+  `Calculadora` + docs/07; (5) e2e. 183 unit (+3 `conRealce`) + 47 e2e (+1) verdes,
+  lint + build verdes. Verificación visual claro/oscuro/es/en (ámbar-700 legible
+  en claro, 4.54:1; singular "el primer año"/"the first year" en N=1). Revisión de
+  diff con subagente fresco (contraste verificado numéricamente; `src/core/`
+  intocado): sin bloqueantes. Su único accionable se aplicó (plegado por
+  `--fixup`): el copy dinámico del Aporte mensual (que vive FUERA del colapsable)
+  persistía al COLAPSAR la sección → se gateó `impulsoActivo` también a
+  `impulsoAbierto`, así las señales del vínculo aparecen/desaparecen juntas
+  (+e2e del caso colapsar-con-valores). Sus 2 NITs (unit test de `conRealce`
+  valida el mecanismo no el token — cubierto por e2e; markup desbalanceado
+  degrada sin romper, igual que `conNegritas`) no requieren acción. `main` no
+  avanza (esto va a dev; release 1.2.0 tras M18).
 - **2026-07-13 · Extra (post-1.1.0) — Incidencias y mejoras de UI** ✅. Rama
   `feature/incidencias-ui-usd-miles` (4 commits granulares sobre `dev`). Trabajo
   NO planeado fuera de la checklist (pedido de Jef antes de M14). Commits:
