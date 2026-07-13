@@ -4,14 +4,14 @@
 
 ## Próximo paso
 
-**M13 cerrado: la Fase 2 está completa.** Sigue el **release 1.1.0** (CLAUDE.md
-§6, precondición: PR de M13 `feature/modulo-13-ui-experto → dev` mergeado): rama
-`release/1.1.0` desde `dev` actualizado con ÚNICAMENTE el bump
-(`npm version minor --no-git-tag-version` → 1.1.0; minor = features de Fase 2),
-mergeada a `dev`; el release en sí es el merge `dev → main` (el footer del build
-debe mostrar `v1.1.0`). **Claude nunca mergea:** se entregan los links de PR
-(feature→dev ya entregado; luego release→dev y dev→main). Tras el release arranca
-la **Fase 3** con **M14 (motor modo meta)** [TDD], leer `docs/03` §1.
+**Release 1.1.0 cortado** (PR #22 `release/1.1.0 → dev` con solo el bump + PR #23
+`dev → main`; `main` en **v1.1.0**, footer del build verificado). La **Fase 2 está
+completa** (Avanzada + Experto). `main` avanzó por segunda vez con este release.
+
+Sigue la **Fase 3** con **M14 · motor modo meta** [TDD]: leer `docs/ESTADO.md` +
+`docs/03` §1. Tabla de casos cerrada → TDD directo (tests primero, verlos fallar,
+implementar), sin Plan Mode (CLAUDE.md §3). `core` no importa nada externo; la
+métrica/despeje vive como función pura (patrón de M11).
 
 **Deuda observada (NO de M13, heredada de M6): la cifra grande muestra centavos**
 (`1.006.968,93 US$`), no dólar entero half-up como pide `docs/02` §7. Es herencia
@@ -448,8 +448,10 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
   de "Varianza" duplicado por ser campo único sin `.titulo`) es coherente con la
   spec → documentado, no aplicado (exigiría clave de copy nueva, decisión de Jef).
   **Trampa flaky confirmada de nuevo:** F4 (M5) falla en la suite completa
-  (hidratación fantasma del preview), pasa aislado → no es de M13. `main` sigue sin
-  avanzar: el release 1.1.0 (dev→main) se corta tras mergear M13.
+  (hidratación fantasma del preview), pasa aislado → no es de M13. **Release 1.1.0
+  cortado** tras M13: PR #21 (feature→dev), PR #22 (`release/1.1.0 → dev`, solo el
+  bump `npm version minor` → 1.1.0) y PR #23 (`dev → main`). `main` en v1.1.0
+  (footer verificado). Cierra la Fase 2.
 - **2026-07-12 · Sesión 12 — M12 UI tab Avanzada** ✅. Rama
   `feature/modulo-12-ui-avanzada` (7 commits granulares sobre `dev`). Tarea
   estructural multi-archivo; confirmadas 2 decisiones con Jef antes de codear:
