@@ -16,6 +16,8 @@
 - Números y moneda SOLO vía `formatMoney(valor, locale)` y
   `Intl.NumberFormat(locale)`. USD siempre; el símbolo/formato cambia por locale
   (`$1,000.00` en en-US; `1.000,00 US$` según es-*), la moneda no.
+- Los textos de `moneda.*` (§3) son copy de UI que COMUNICA la moneda al
+  usuario; no son formateo (el literal de formateo sigue solo en `formatMoney`).
 - Cero strings en JSX (regla verificable de CLAUDE.md).
 
 ## 3. Copy canónico — formulario (es)
@@ -29,13 +31,33 @@
 | frecuencia        | Frecuencia de capitalización      | Cada cuánto el interés se suma al capital y empieza a generar más interés.                                                                                       |
 | impulso.titulo    | Impulso inicial (opcional)        | Aporta más durante los primeros años y deja que el tiempo haga el resto.                                                                                         |
 | impulso.anios     | Años de impulso                   | De 1 a 5 años, contados desde el inicio.                                                                                                                         |
-| impulso.aporte    | Aporte mensual durante el impulso | Reemplaza al aporte mensual solo durante esos años.                                                                                                              |
+| impulso.aporte    | Aporte mensual durante el impulso | Reemplaza al [[Aporte mensual]] solo durante esos años.                                                                                                          |
 | proteccion.titulo | Protección final (opcional)       | Baja la rentabilidad esperada en los últimos años para proteger lo alcanzado, como hacen los fondos de retiro.                                                   |
 | proteccion.anios  | Años de protección                | De 1 a 5 años, contados desde el final.                                                                                                                          |
 | proteccion.tasa   | Rentabilidad reducida             | La tasa a la que llegarás al final. La bajada es gradual, año a año, automática.                                                                                 |
 | varianza          | Varianza de la tasa (opcional)    | Puntos por encima y por debajo de tu tasa para ver un escenario prudente y uno optimista.                                                                        |
 | meta              | Meta (opcional)                   | ¿Cuánto quieres tener al final? Calcularemos el aporte mensual necesario.                                                                                        |
 | inflacion         | Inflación anual                   | Promedio histórico de EE. UU.: 3 %. Puedes ajustarla.                                                                                                            |
+
+Vínculo Impulso ↔ Aporte mensual (docs/04 §2, aclara que el impulso REEMPLAZA,
+no suma): los `[[ ]]` marcan el tramo con color de acento (token
+`--sem-aportes-texto`, la familia "aportes"), renderizado por `conRealce`
+(`src/ui/realce.tsx`). Al EXPANDIR la sección, el label de `aporteRegimen` se
+tiñe de acento y su referencia en `impulso.aporte.ayuda` va como
+"[[Aporte mensual]]" (mayúscula). Cuando el impulso APLICA de verdad (ambos
+campos + no clampeado) se usan las variantes con el número de años N:
+`campos.aporteRegimen.ayudaImpulso` = "Lo que agregas cada mes, tras
+[[{periodo}]] de impulso. Se abona al final de cada mes." ·
+`campos.impulso.aporte.ayudaImpulso` = "Reemplaza al [[{aporte}]] durante
+[[{periodo}]]." · `campos.impulso.periodo.singular` = "el primer año" /
+`.plural` = "los primeros {anios} años" (la UI elige por N===1). `{aporte}` se
+interpola con el label de `aporteRegimen` (fuente única del literal).
+
+Moneda visible (MVP solo USD): `moneda.codigo` = "USD" (igual en ambos idiomas)
+· `moneda.nota` = "Todos los montos están en dólares estadounidenses (USD)."
+(línea sobre el Paso 1) · `moneda.tooltip` = "Por ahora, los cálculos son solo
+en dólares (USD). En el futuro podrás elegir otras monedas." (tooltip del badge
+del header y del adorno-select deshabilitado de los campos de dinero).
 
 Avisos suaves: `seccion.incompleta` = "Completa ambos campos para aplicar esta
 sección." · `seccion.clampeada.impulso` = "Tu impulso cubre todo el período." ·

@@ -15,6 +15,7 @@ import type { Locale } from "../i18n/locale";
 import { t } from "../i18n/t";
 
 import { SERIES } from "./series";
+import { TOOLTIP_CONTENT, TOOLTIP_ITEM, TOOLTIP_LABEL } from "./tooltipEstilos";
 
 interface Props {
   filas: FilaAnual[];
@@ -68,6 +69,10 @@ export default function BarrasApiladas({
           />
           <YAxis hide />
           <Tooltip
+            contentStyle={TOOLTIP_CONTENT}
+            labelStyle={TOOLTIP_LABEL}
+            itemStyle={TOOLTIP_ITEM}
+            cursor={{ fill: "var(--sem-borde)", fillOpacity: 0.3 }}
             formatter={(valor: number, clave: string) => [
               formatMoney(valor, locale),
               t(dict, SERIES.find((s) => s.clave === clave)!.leyenda),

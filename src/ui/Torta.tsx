@@ -6,6 +6,7 @@ import type { Locale } from "../i18n/locale";
 import { t } from "../i18n/t";
 
 import { SERIES } from "./series";
+import { TOOLTIP_CONTENT, TOOLTIP_ITEM, TOOLTIP_LABEL } from "./tooltipEstilos";
 
 interface Props {
   /** Capital inicial (P): primer segmento de la composición final. */
@@ -60,6 +61,9 @@ export default function Torta({
             ))}
           </Pie>
           <Tooltip
+            contentStyle={TOOLTIP_CONTENT}
+            labelStyle={TOOLTIP_LABEL}
+            itemStyle={TOOLTIP_ITEM}
             formatter={(valor: number, clave: string) => [
               formatMoney(valor, locale),
               etiqueta(clave),
