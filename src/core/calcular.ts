@@ -10,8 +10,7 @@ import { tasaMensualEquivalente } from "./tasas";
  * `tasa(t)` y `aporte(t)`.
  */
 export function calcular(e: Escenario): Resultado {
-  const iMes = tasaMensualEquivalente(e.tasaNominalAnual, e.frecuencia);
-  const tasa: (t: number) => number = () => iMes;
+  const tasa = construirTasa(e);
   const aporte = construirAporte(e);
 
   const filas: FilaAnual[] = [];
@@ -49,6 +48,33 @@ export function calcular(e: Escenario): Resultado {
   const multiplicador = totalAportado === 0 ? 0 : balance / totalAportado;
 
   return { balanceFinal: balance, filas, totalAportado, interesTotal, multiplicador };
+}
+
+/**
+ * Hook `tasa(t)` (docs/02 §5, glide path). Sin protección: tasa mensual
+ * equivalente constante (idéntico a M2). Con protección: los últimos `N'*12`
+ * meses bajan en escalera anual desde la principal hacia la reducida, en
+ * bloques de 12 contados DESDE EL FINAL. `N' = min(N, ceil(duracion/12))` es el
+ * clampeo del borde 2. La reducida usa la MISMA convención §1 (nominal + el
+ * selector `m` del formulario): se convierte una sola vez con
+ * `tasaMensualEquivalente(r_k, e.frecuencia)`, no dos.
+ */
+function construirTasa(e: Escenario): (t: number) => number {
+  const iMes = tasaMensualEquivalente(e.tasaNominalAnual, e.frecuencia);
+  if (!e.proteccion) return () => iMes;
+
+  const { anios, tasaReducida } = e.proteccion;
+  const principal = e.tasaNominalAnual;
+  const bloques = Math.min(anios, Math.ceil(e.duracionMeses / 12)); // N'
+  const inicioProt = e.duracionMeses - bloques * 12;
+
+  return (t) => {
+    if (t <= inicioProt) return iMes;
+    const j = Math.ceil((e.duracionMeses - t + 1) / 12); // bloque desde el final (1 = último)
+    const k = bloques - j + 1; // 1..N'
+    const rk = principal - ((principal - tasaReducida) * k) / bloques; // nominal del bloque
+    return tasaMensualEquivalente(rk, e.frecuencia);
+  };
 }
 
 /**

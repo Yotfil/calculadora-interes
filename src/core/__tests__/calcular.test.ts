@@ -154,6 +154,57 @@ describe("impulso inicial — aportes escalonados (docs/02 §4)", () => {
   });
 });
 
+describe("protección final — glide path gradual (docs/02 §5)", () => {
+  it("G1 canónico protegido: E1 + protección N=5 → 5 % → 869 040,78 (convive con impulso, borde 5)", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 10_000,
+        aporteRegimen: 420,
+        duracionMeses: 300,
+        impulso: { anios: 5, aporteMensual: 1_000 },
+        proteccion: { anios: 5, tasaReducida: 5 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(869_040.78, 2);
+  });
+
+  it("G3 escalera corta: P=10 000; 100; 120 m; 10 %→4 %, N=2 → 43 579,79", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 10_000,
+        aporteRegimen: 100,
+        duracionMeses: 120,
+        proteccion: { anios: 2, tasaReducida: 4 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(43_579.79, 2);
+  });
+
+  it("G4 clampeo: P=10 000; 100; 36 m; 10 %→5 %, N=5→3 bloques (8,33/6,67/5 %) → 16 136,34", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 10_000,
+        aporteRegimen: 100,
+        duracionMeses: 36,
+        proteccion: { anios: 5, tasaReducida: 5 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(16_136.34, 2);
+  });
+
+  it("G5 duración no múltiplo: P=0; 100; 30 m; 10 %→5 %, N=2 → 3 227,53", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 0,
+        aporteRegimen: 100,
+        duracionMeses: 30,
+        proteccion: { anios: 2, tasaReducida: 5 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(3_227.53, 2);
+  });
+});
+
 describe("bordes del resultado", () => {
   it("multiplicador es 0 (no NaN) cuando no se aporta nada", () => {
     const r = calcular(escenario({ capitalInicial: 0, aporteRegimen: 0 }));
