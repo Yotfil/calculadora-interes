@@ -4,15 +4,17 @@
 
 ## Próximo paso
 
-Sigue la **Fase 2** con el **Módulo 10 (Motor glide path gradual)** [TDD]: leer
-`docs/02` §5 + `docs/ESTADO.md`. Tabla de casos cerrada (§118) → TDD directo
-(tests primero, rojo, implementación; tolerancia ±0,01 USD). El glide construye
-el hook `tasa(t)` dentro de `calcular` (el bucle NO cambia; decisión de M2, igual
-que hizo M9 con `aporte(t)`). Firma pública ya declarada:
-`Escenario.proteccion?: { anios, tasaReducida }` (`docs/01` §5). Trampa viva: los
-bloques del glide se cuentan DESDE EL FINAL (`docs/02` §5); la tasa reducida usa
-la MISMA convención (nominal + selector) que la principal, no convertir dos veces.
-**Estado del deploy (M8):** dominio real `https://helenguevara.com` fijado en
+Sigue la **Fase 2** con el **Módulo 11 (Métricas derivadas)** [TDD]: leer
+`docs/06` §1 + `docs/ESTADO.md`. Tres métricas sobre resultados ya calculados
+(no tocan el bucle): **ahorro del escalonado** (impulso vs. régimen constante),
+**costo de la protección** (base − glide; es el caso **G2 = E1 − G1 = 137 928,15**
+de `docs/02` §5, diferido aquí a M11) y **banda de varianza** (`docs/02` §8,
+`Escenario.varianza` ya declarada). Decidir con Jef dónde viven: métrica pura en
+`core` que compara dos `Resultado`/dos corridas, o helper de presentación. TDD
+directo con las anclas de `docs/06` §1 (ej. ahorro ≈ 39 616,90). **M10 cerrado:**
+el hook `tasa(t)` (`construirTasa` junto a `calcular`) arma la escalera del glide;
+bucle intacto (decisión M2). Trampa confirmada y viva: bloques contados DESDE EL
+FINAL y reducida convertida UNA sola vez (misma convención §1). **Estado del deploy (M8):** dominio real `https://helenguevara.com` fijado en
 config/robots/e2e; `netlify.toml` versionado (`astro build`→`dist`, Node 22);
 release 1.0.0 cortado (bump only en `release/1.0.0`). **Trabajo humano pendiente
 de Jef** (no bloquea a Claude): mergear los 3 PRs en orden (feature→dev,
@@ -49,7 +51,9 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 - [x] **M9 · Motor escalonado** [TDD] (`docs/02` §4): hook `aporte(t)` con
       `corte = min(N*12, duracionMeses)`; bucle intacto. E1–E4 verdes.
-- [ ] **M10 · Motor glide path gradual** [TDD] (`docs/02` §5).
+- [x] **M10 · Motor glide path gradual** [TDD] (`docs/02` §5): hook `tasa(t)` en
+      `construirTasa(e)`; `N' = min(N, ceil(dur/12))`, bloques desde el final;
+      bucle intacto. G1/G3/G4/G5 verdes (G2 → M11).
 - [ ] **M11 · Métricas derivadas** [TDD]: ahorro del escalonado, costo de la
       protección, banda de varianza (`docs/06` §1).
 - [ ] **M12 · UI tab Avanzada**: sección "Impulso inicial" + métrica de ahorro.
@@ -236,6 +240,19 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
   sustituyó la línea inline de `aporte` por la llamada (decisión M2 al pie de la
   letra). `t ≤ corte` (no `<`): con N=2/30m da meses 1–24 con X (borde 3).
 
+- **M10 · Hook `tasa(t)` en `construirTasa(e)`**: función pura junto a `calcular`
+  (espeja a `construirAporte`). Sin `proteccion` → `() => iMes` constante
+  (idéntico a M2). Con `proteccion` → escalera de `docs/02` §5 literal:
+  `bloques (N') = min(anios, ceil(dur/12))`, `inicioProt = dur − N'*12`; para
+  `t > inicioProt`, `j = ceil((dur − t + 1)/12)` (bloque DESDE EL FINAL, 1 = último),
+  `k = N' − j + 1`, `r_k = principal − (principal − reducida)*k/N'`, y
+  `tasa(t) = tasaMensualEquivalente(r_k, frecuencia)` (conversión ÚNICA, misma
+  convención §1). El bucle no cambió. `construirTasa`/`construirAporte` son
+  independientes → impulso y protección conviven sin regla de conflicto (borde 5,
+  G1 usa ambos). `construirTasa` queda interna (no se exporta: barrel = firma
+  pública, decisión M2); la escalera se fija por balance final, que ya discrimina
+  la trampa "desde el final" (G5 = 3 227,53 solo sale contando desde el final).
+
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
   `root` en esta máquina y algunos installs fallan con EACCES/EEXIST.
   Arreglo permanente: `sudo chown -R $(whoami) ~/.npm`. Workaround usado en
@@ -311,6 +328,24 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 ## Historial de sesiones
 
+- **2026-07-12 · Sesión 10 — M10 Motor glide path gradual (protección final)** ✅.
+  Rama `feature/modulo-10-motor-glide` (1 commit sobre `dev`). TDD directo (tabla
+  cerrada §5, sin Plan Mode): tests G1/G3/G4/G5 primero, rojo verificado (los 4
+  fallan; la protección se ignoraba), luego implementación. G2 (costo de la
+  protección) diferido a M11 por acuerdo con Jef (es métrica derivada, no motor).
+  El glide se implementó como `construirTasa(e)` (función pura junto a `calcular`,
+  espeja a `construirAporte`): arma el hook `tasa(t)` con la escalera de §5
+  (bloques DESDE EL FINAL, `N' = min(anios, ceil(dur/12))`, reducida convertida
+  una sola vez con la misma convención §1). El bucle de `calcular` NO cambió (solo
+  la línea inline de `tasa` → llamada; decisión M2). 151 unit verdes (+4: G1
+  869 040,78 con impulso+protección convivientes / G3 43 579,79 / G4 clampeo
+  16 136,34 / G5 no múltiplo 3 227,53), lint verde. Diff mínimo aditivo. Revisión
+  de diff con subagente fresco contra `docs/02` §5: reimplementó el motor en
+  Python y reprodujo los 4 números al centavo; sin bloqueantes ni accionables
+  críticos. Su único accionable era OPCIONAL (test que fije la partición de
+  bloques) → no aplicado: exigiría exportar `construirTasa` (rompe barrel = firma
+  pública) o asserts frágiles, y el balance final ya discrimina la trampa "desde
+  el final". `main` sigue sin avanzar (el release 1.1.0 es tras M13).
 - **2026-07-12 · Sesión 9 — M9 Motor escalonado (impulso inicial)** ✅. Rama
   `feature/modulo-09-motor-escalonado` (1 commit sobre `dev`). Arranca la Fase 2.
   TDD directo (tabla de casos cerrada, sin Plan Mode): tests E1–E4 primero, rojo
