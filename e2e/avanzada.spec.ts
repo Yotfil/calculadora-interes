@@ -28,7 +28,7 @@ test.describe("tab Avanzada — impulso inicial (M12)", () => {
       "true",
     );
     await expect(page.getByTestId("campo-aniosImpulso")).toHaveValue("5");
-    await expect(page.getByTestId("campo-aporteImpulso")).toHaveValue("1000");
+    await expect(page.getByTestId("campo-aporteImpulso")).toHaveValue("1.000");
 
     // Cifra grande = balance final de E1 (docs/02 §4).
     const cifra = page.getByTestId("cifra-grande");
@@ -65,7 +65,7 @@ test.describe("tab Avanzada — impulso inicial (M12)", () => {
     // Los valores del impulso siguen intactos al volver a Avanzada (docs/04 §2).
     await page.getByTestId("tab-avanzada").click();
     await expect(page.getByTestId("campo-aniosImpulso")).toHaveValue("5");
-    await expect(page.getByTestId("campo-aporteImpulso")).toHaveValue("1000");
+    await expect(page.getByTestId("campo-aporteImpulso")).toHaveValue("1.000");
   });
 
   test("avisos suaves: sección incompleta y sección clampeada (docs/07 §3)", async ({

@@ -10,7 +10,8 @@ import { abrir } from "./util";
 test.describe("formulario Básica (M5)", () => {
   test("arranca con los defaults de docs/02 §6", async ({ page }) => {
     await page.goto("/es/");
-    await expect(page.getByTestId("campo-capitalInicial")).toHaveValue("1000");
+    // Los campos de dinero muestran separador de miles del locale (es: 1.000).
+    await expect(page.getByTestId("campo-capitalInicial")).toHaveValue("1.000");
     await expect(page.getByTestId("campo-aporteRegimen")).toHaveValue("100");
     await expect(page.getByTestId("campo-duracion")).toHaveValue("10");
     await expect(page.getByTestId("campo-tasaNominalAnual")).toHaveValue("8");
@@ -20,7 +21,9 @@ test.describe("formulario Básica (M5)", () => {
 
   test("cambiar de tab conserva los valores (docs/04 §2)", async ({ page }) => {
     await abrir(page, "/es/");
+    // El estado crudo es 50000; se muestra 50.000 (separador de miles de es).
     await page.getByTestId("campo-capitalInicial").fill("50000");
+    await expect(page.getByTestId("campo-capitalInicial")).toHaveValue("50.000");
 
     await page.getByTestId("tab-experto").click();
     await expect(page.getByTestId("tab-experto")).toHaveAttribute(
@@ -32,7 +35,19 @@ test.describe("formulario Básica (M5)", () => {
       "false",
     );
     // El valor tecleado sigue ahí tras cambiar de nivel.
-    await expect(page.getByTestId("campo-capitalInicial")).toHaveValue("50000");
+    await expect(page.getByTestId("campo-capitalInicial")).toHaveValue("50.000");
+  });
+
+  test("teclear '.' en es cuenta como decimal, no como separador de miles", async ({
+    page,
+  }) => {
+    await abrir(page, "/es/");
+    const campo = page.getByTestId("campo-capitalInicial");
+    await campo.fill("");
+    // El "." del teclado numérico es intención decimal: 1000.5 → 1.000,5
+    // (sin el fix, el "." se eliminaría como millar y daría 10.005).
+    await campo.pressSequentially("1000.5");
+    await expect(campo).toHaveValue("1.000,5");
   });
 
   test("F4: tasa fuera de rango → error inline + scroll/focus, sin cálculo", async ({

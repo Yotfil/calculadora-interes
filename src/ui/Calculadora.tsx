@@ -360,6 +360,8 @@ export default function Calculadora({ locale, dict }: Props) {
                 ayuda={t(dict, "campos.capitalInicial.ayuda")}
                 valor={valores.capitalInicial}
                 error={mensaje("capitalInicial")}
+                agrupaMiles
+                locale={locale}
                 onCambio={(v) => cambiar("capitalInicial", v)}
                 onBlur={() => validarCampo("capitalInicial")}
               />
@@ -375,6 +377,8 @@ export default function Calculadora({ locale, dict }: Props) {
                 ayuda={t(dict, "campos.aporteRegimen.ayuda")}
                 valor={valores.aporteRegimen}
                 error={mensaje("aporteRegimen")}
+                agrupaMiles
+                locale={locale}
                 onCambio={(v) => cambiar("aporteRegimen", v)}
                 onBlur={() => validarCampo("aporteRegimen")}
               />
@@ -407,6 +411,8 @@ export default function Calculadora({ locale, dict }: Props) {
                     ayuda={t(dict, "campos.impulso.aporte.ayuda")}
                     valor={valores.aporteImpulso}
                     error={mensaje("aporteImpulso")}
+                    agrupaMiles
+                    locale={locale}
                     onCambio={(v) => cambiar("aporteImpulso", v)}
                     onBlur={() => validarCampo("aporteImpulso")}
                   />
