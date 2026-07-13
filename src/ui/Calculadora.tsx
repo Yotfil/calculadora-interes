@@ -21,7 +21,10 @@ import SeccionColapsable from "./SeccionColapsable";
 import Tabs from "./Tabs";
 import type { Tab } from "./tab";
 import { aEscenario } from "./esquema/a-escenario";
-import { esquemaFormulario } from "./esquema/formulario";
+import {
+  esquemaFormulario,
+  type ValoresFormulario,
+} from "./esquema/formulario";
 import { mapearError } from "./esquema/mapear-error";
 
 // Lo que la ruta de éxito de Calcular necesita para pintar la zona de resultados.
@@ -62,6 +65,20 @@ const DEFAULTS: Record<string, string> = {
   // Secciones opcionales arrancan vacías (docs/02 §6): "" cuenta como ausente.
   aniosImpulso: "",
   aporteImpulso: "",
+};
+
+// E1 canónico (docs/02 §4): P=10 000, régimen 420, 300 m (=25 años), 10 % mensual,
+// impulso X=1 000 durante N=5 años. Balance final 1 006 968,93 (cifra grande
+// 1 006 969, F2). Es el ejemplo que precarga "Ver un ejemplo" (docs/04 §4).
+const EJEMPLO_E1: Record<string, string> = {
+  capitalInicial: "10000",
+  aporteRegimen: "420",
+  duracion: "25",
+  duracionUnidad: "a",
+  tasaNominalAnual: "10",
+  frecuencia: "12",
+  aniosImpulso: "5",
+  aporteImpulso: "1000",
 };
 
 // El evento GA4 `calcular` reporta el nivel con `tab` (b/a/e, docs/06 §2).
@@ -158,6 +175,31 @@ export default function Calculadora({ locale, dict }: Props) {
     });
   }
 
+  // Arma el escenario según el tab (docs/04 §2), corre el motor, deriva las
+  // métricas del MISMO escenario y pinta la zona de resultados. Lo comparten el
+  // botón Calcular y "Ver un ejemplo"; `tabActivo` se pasa explícito porque
+  // setTab es asíncrono y el ejemplo cambia de tab al vuelo.
+  function pintar(datos: ValoresFormulario, tabActivo: Tab) {
+    const escenario = aEscenario(datos, tabActivo);
+    const resultado = calcularMotor(escenario);
+    setSalida({
+      resultado,
+      capitalInicial: datos.capitalInicial,
+      duracion: datos.duracion,
+      duracionUnidad: datos.duracionUnidad,
+      ahorro: ahorroEscalonado(escenario),
+      fijo: fijoEquivalente(escenario),
+      animar: !prefiereReducir(),
+    });
+    // Telemetría (docs/06 §2): `con_impulso`/`con_proteccion` reflejan lo que de
+    // verdad entró al motor según el tab (protección es UI de M13, hoy siempre off).
+    track("calcular", {
+      tab: TAB_EVENTO[tabActivo] ?? "b",
+      con_impulso: escenario.impulso !== undefined,
+      con_proteccion: escenario.proteccion !== undefined,
+    });
+  }
+
   // Calcular nunca se deshabilita (CLAUDE.md §8): con errores hace scroll+focus al
   // primero, sin calcular; en éxito arma el escenario, corre el motor y pinta.
   function calcular(e: FormEvent) {
@@ -182,27 +224,21 @@ export default function Calculadora({ locale, dict }: Props) {
       return;
     }
     setErrores({});
-    const datos = parsed.data;
-    // El tab define qué entra al motor (docs/04 §2): Básica ignora el impulso;
-    // Avanzada/Experto lo aplican. Las métricas se derivan del mismo escenario.
-    const escenario = aEscenario(datos, tab);
-    const resultado = calcularMotor(escenario);
-    setSalida({
-      resultado,
-      capitalInicial: datos.capitalInicial,
-      duracion: datos.duracion,
-      duracionUnidad: datos.duracionUnidad,
-      ahorro: ahorroEscalonado(escenario),
-      fijo: fijoEquivalente(escenario),
-      animar: !prefiereReducir(),
-    });
-    // Telemetría (docs/06 §2): `con_impulso`/`con_proteccion` reflejan lo que de
-    // verdad entró al motor según el tab (protección es UI de M13, hoy siempre off).
-    track("calcular", {
-      tab: TAB_EVENTO[tab] ?? "b",
-      con_impulso: escenario.impulso !== undefined,
-      con_proteccion: escenario.proteccion !== undefined,
-    });
+    pintar(parsed.data, tab);
+  }
+
+  // "Ver un ejemplo" (docs/04 §4): llena E1 canónico, que usa el impulso de
+  // Avanzada (docs/02 §4). Si el tab activo es Básica sube a Avanzada para que el
+  // impulso aplique (F2 → 1 006 969); en Experto se queda ahí (sus otras secciones
+  // van vacías). Expande el impulso, limpia errores y calcula.
+  function cargarEjemplo() {
+    const tabEjemplo: Tab = tab === "basica" ? "avanzada" : tab;
+    setValores(EJEMPLO_E1);
+    setTab(tabEjemplo);
+    setImpulsoAbierto(true);
+    setErrores({});
+    const parsed = esquemaFormulario.safeParse(EJEMPLO_E1);
+    if (parsed.success) pintar(parsed.data, tabEjemplo);
   }
 
   const tabs = [
@@ -404,7 +440,7 @@ export default function Calculadora({ locale, dict }: Props) {
             animar={salida.animar}
           />
         ) : (
-          <EstadoVacio dict={dict} />
+          <EstadoVacio dict={dict} onEjemplo={cargarEjemplo} />
         )}
       </div>
     </section>
