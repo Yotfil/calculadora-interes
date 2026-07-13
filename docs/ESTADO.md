@@ -8,6 +8,9 @@
 `dev → main`; `main` en **v1.1.0**, footer del build verificado). La **Fase 2 está
 completa** (Avanzada + Experto). `main` avanzó por segunda vez con este release.
 
+Tras el release, Jef abrió un tramo de **incidencias y mejoras de UI** fuera de
+la checklist (rama `feature/incidencias-ui-usd-miles`, ver historial 2026-07-13).
+
 Sigue la **Fase 3** con **M14 · motor modo meta** [TDD]: leer `docs/ESTADO.md` +
 `docs/03` §1. Tabla de casos cerrada → TDD directo (tests primero, verlos fallar,
 implementar), sin Plan Mode (CLAUDE.md §3). `core` no importa nada externo; la
@@ -342,6 +345,32 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
   `escenario.proteccion !== undefined` desde M12; hacer los campos tecleables lo
   activó. Cerró la deuda de M7/M12.
 
+- **Incidencias UI (2026-07-13) · Miles solo en presentación**: los inputs de
+  dinero (`capitalInicial`/`aporteRegimen`/`aporteImpulso`; `meta` lo hereda en
+  M16) muestran separador de miles del locale vía `src/ui/miles.ts`
+  (`agruparMiles`/`desagruparMiles` + preservación de cursor en `Campo`). El
+  estado del formulario y el esquema Zod siguen recibiendo el string CRUDO
+  canónico (dígitos + `.` decimal): la decisión de M5 no cambió. A diferencia de
+  `Intl` es-ES, se agrupa también el entero de 4 cifras (1000 → "1.000", pedido
+  de Jef).
+- **Incidencias UI (2026-07-13) · Moneda USD visible** (decisión de Jef: las 3
+  señales a la vez): claves nuevas `moneda.codigo|nota|tooltip` (docs/07 §2–3),
+  nota sobre el Paso 1, badge en el header y adorno tipo SELECT DESHABILITADO
+  junto a los inputs de dinero con tooltip custom en hover ("en el futuro podrás
+  elegir otras monedas", anticipa el selector real). `moneda.codigo` ("USD") es
+  idéntico en es/en a propósito: quedó EXENTO en el test de paridad (como los
+  endónimos `idioma.*`). El literal de FORMATEO sigue solo en `formatMoney`.
+- **Incidencias UI (2026-07-13) · Flake e2e resuelto de raíz**: la isla expone
+  `data-hidratada` en su primer efecto y el helper `abrir()` de `e2e/util.ts` lo
+  espera tras navegar. TODO spec que interactúe con la isla (fill/click) debe
+  usar `abrir`, no `page.goto` directo: una interacción pre-hidratación se
+  pierde (y con miles, un re-fill del MISMO texto ni siquiera dispara `input`).
+  Con esto la suite completa pasó 3 corridas consecutivas sin flakes.
+- **Incidencias UI (2026-07-13) · Tooltips de Recharts con tokens**: estilos
+  compartidos en `src/ui/tooltipEstilos.ts` (torta y barras); el default de
+  Recharts (blanco) era ilegible en oscuro. Cualquier gráfico futuro debe
+  reusar ese módulo.
+
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
   `root` en esta máquina y algunos installs fallan con EACCES/EEXIST.
   Arreglo permanente: `sudo chown -R $(whoami) ~/.npm`. Workaround usado en
@@ -421,6 +450,38 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
 
 ## Historial de sesiones
 
+- **2026-07-13 · Extra (post-1.1.0) — Incidencias y mejoras de UI** ✅. Rama
+  `feature/incidencias-ui-usd-miles` (4 commits granulares sobre `dev`). Trabajo
+  NO planeado fuera de la checklist (pedido de Jef antes de M14). Commits:
+  (1) tooltips de Recharts (torta+barras) con tokens vía `tooltipEstilos.ts`
+  compartido — el default blanco era ilegible en oscuro; (2) fix de raíz del
+  flake e2e: `data-hidratada` en la isla + helper `abrir()` (`e2e/util.ts`) que
+  los specs interactivos usan en vez de `goto` — 3 corridas completas seguidas
+  sin flakes (antes 1–2 fallos fantasma por corrida); (3) separador de miles en
+  inputs de dinero (`src/ui/miles.ts` + máscara en `Campo` con preservación de
+  cursor; crudo canónico intacto para el esquema, decisión de M5 sin cambios);
+  (4) moneda USD visible: nota sobre Paso 1 + badge header + adorno
+  select-deshabilitado con tooltip custom (claves `moneda.*`, docs/07
+  actualizado; exención de `moneda.codigo` en el parity-test). Plan Mode +
+  3 decisiones de Jef (las 3 señales de moneda a la vez; adorno como select
+  deshabilitado con tooltip "próximamente otras monedas"; agrupar también los
+  enteros de 4 cifras a diferencia de `Intl` es-ES). 180 unit (+11 de miles,
+  +exención parity) + 46 e2e (+3: moneda/adorno/tooltip en hover, valores
+  agrupados, "." tecleado). Verificación visual claro/oscuro con screenshots
+  (tooltips, badge, nota, adornos; estilos computados del tooltip en oscuro).
+  Revisión de diff con subagente fresco contra docs/02 §6, 05 §2 y 07 §2–3
+  (fuzz de 20 000 casos de ida-vuelta en `miles.ts` contra el `aNumero` real;
+  SSR de `useLayoutEffect` reproducido con React 18.3.1): sin bloqueantes; sus
+  3 accionables se verificaron y aplicaron plegados por `--fixup`+autosquash
+  — (a) "." TECLEADO en es se trataba como millar y corrompía el monto ×100 →
+  ahora separador tecleado = decimal del locale (e2e nuevo lo fija); (b) alias
+  isomórfico `useEfectoCaret` (el warning SSR de `useLayoutEffect` aparecía en
+  cada render de `Campo` en dev); (c) Supr sobre un separador dejaba el caret
+  "atascado" → salto de caret. Su NIT de estilos (radio 4px + sombra `shadow-md`
+  en el tooltip de Recharts) también se aplicó; sus NITs de a11y (aria-label
+  verboso del adorno; tooltip no alcanzable por teclado/táctil) quedan
+  documentados como mitigados por la `nota-moneda` visible. `main` no avanza
+  (esto va a dev; el release 1.2.0 es tras M18).
 - **2026-07-12 · Sesión 13 — M13 UI tab Experto** ✅. Rama
   `feature/modulo-13-ui-experto` (3 commits granulares sobre `dev`). Tarea
   estructural multi-archivo (Plan Mode + confirmación de alcance con Jef).
