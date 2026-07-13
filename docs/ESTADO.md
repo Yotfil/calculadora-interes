@@ -4,12 +4,14 @@
 
 ## Próximo paso
 
-Arranca la **Fase 2** (release 1.1.0). Módulo 9 (Motor escalonado) [TDD]: leer
-`docs/02` §4 + `docs/ESTADO.md`. Tabla de casos cerrada → va directo a TDD (tests
-primero, rojo, implementación; tolerancia ±0,01 USD). El impulso escalonado
-construye el hook `aporte(t)` dentro de `calcular` (el bucle NO cambia; decisión
-de M2). Firma pública ya declarada: `Escenario.impulso?: { anios, aporteMensual }`
-(`docs/01` §5).
+Sigue la **Fase 2** con el **Módulo 10 (Motor glide path gradual)** [TDD]: leer
+`docs/02` §5 + `docs/ESTADO.md`. Tabla de casos cerrada (§118) → TDD directo
+(tests primero, rojo, implementación; tolerancia ±0,01 USD). El glide construye
+el hook `tasa(t)` dentro de `calcular` (el bucle NO cambia; decisión de M2, igual
+que hizo M9 con `aporte(t)`). Firma pública ya declarada:
+`Escenario.proteccion?: { anios, tasaReducida }` (`docs/01` §5). Trampa viva: los
+bloques del glide se cuentan DESDE EL FINAL (`docs/02` §5); la tasa reducida usa
+la MISMA convención (nominal + selector) que la principal, no convertir dos veces.
 **Estado del deploy (M8):** dominio real `https://helenguevara.com` fijado en
 config/robots/e2e; `netlify.toml` versionado (`astro build`→`dist`, Node 22);
 release 1.0.0 cortado (bump only en `release/1.0.0`). **Trabajo humano pendiente
@@ -45,7 +47,8 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 ### Fase 2 — Avanzada y Experto (release 1.1.0)
 
-- [ ] **M9 · Motor escalonado** [TDD] (`docs/02` §4).
+- [x] **M9 · Motor escalonado** [TDD] (`docs/02` §4): hook `aporte(t)` con
+      `corte = min(N*12, duracionMeses)`; bucle intacto. E1–E4 verdes.
 - [ ] **M10 · Motor glide path gradual** [TDD] (`docs/02` §5).
 - [ ] **M11 · Métricas derivadas** [TDD]: ahorro del escalonado, costo de la
       protección, banda de varianza (`docs/06` §1).
@@ -225,7 +228,13 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
   redirector fino se excluye del sitemap y además lleva `<meta robots noindex>`
   por si un crawler sin JS lo alcanza; SIN canonical para no mezclar señales.
 
-## Trampas conocidas
+- **M9 · Hook `aporte(t)` en `construirAporte(e)`**: función pura junto a
+  `calcular` que devuelve el aporte por mes. Sin `impulso` → régimen constante
+  (comportamiento idéntico a M2). Con `impulso` → `X` mientras `t ≤ corte`,
+  luego régimen; `corte = min(anios*12, duracionMeses)` (el `min` ES el clampeo
+  del borde 2 de `docs/02` §4). El bucle de `calcular` no cambió: solo se
+  sustituyó la línea inline de `aporte` por la llamada (decisión M2 al pie de la
+  letra). `t ≤ corte` (no `<`): con N=2/30m da meses 1–24 con X (borde 3).
 
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
   `root` en esta máquina y algunos installs fallan con EACCES/EEXIST.
@@ -302,6 +311,23 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 ## Historial de sesiones
 
+- **2026-07-12 · Sesión 9 — M9 Motor escalonado (impulso inicial)** ✅. Rama
+  `feature/modulo-09-motor-escalonado` (1 commit sobre `dev`). Arranca la Fase 2.
+  TDD directo (tabla de casos cerrada, sin Plan Mode): tests E1–E4 primero, rojo
+  verificado (E1/E2/E4 fallan, E3 pasa por no usar impulso), luego implementación.
+  El impulso se implementó como `construirAporte(e)` (función pura junto a
+  `calcular`) que arma el hook `aporte(t)`: `corte = min(anios*12, duracionMeses)`,
+  `aporte = X si t ≤ corte, régimen si no`. El bucle de `calcular` NO cambió (solo
+  la línea inline de `aporte` → llamada; decisión M2). 147 unit verdes (+5: E1–E4
+  de `docs/02` §4 con números exactos 1 006 968,93 / 7 099,81 / 677 839,48 /
+  20 890,91, más un borde 4 con X=0), lint verde. Diff mínimo aditivo: se evitó
+  `prettier --write` sobre los archivos (reflujo ajeno de bloques preexistentes,
+  trampa de M7) → los archivos no quedan prettier-clean pero el candado real es
+  eslint. Revisión de diff con subagente fresco contra `docs/02` §4: sin
+  bloqueantes; reimplementó el motor desde la spec y confirmó los 4 números
+  exactos, el corte sin off-by-one (`t ≤ corte`) y el bucle/boundaries intactos.
+  Sus 2 NITs se aplicaron (comentario de cabecera §2–3 → §2–4; test dedicado del
+  borde 4 con X=0). `main` sigue sin avanzar (el release 1.1.0 es tras M13).
 - **2026-07-12 · Sesión 8 — M8 Deploy + release 1.0.0** ✅. Rama
   `feature/modulo-08-deploy` (2 commits) + `release/1.0.0` (1 commit), ambas sobre
   `dev`. Plan Mode. Tarea de infra + release, sin lógica de producto. Dominio real
