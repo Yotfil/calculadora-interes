@@ -14,6 +14,11 @@
     "avanzada": "Advanced",
     "experto": "Expert"
   },
+  "moneda": {
+    "codigo": "USD",
+    "nota": "All amounts are in U.S. dollars (USD).",
+    "tooltip": "For now, calculations are in U.S. dollars (USD) only. In the future you'll be able to choose other currencies."
+  },
   "pasos": {
     "paso1": "Step 1 · Initial capital",
     "paso2": "Step 2 · Contributions",

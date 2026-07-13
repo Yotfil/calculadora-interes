@@ -350,6 +350,10 @@ export default function Calculadora({ locale, dict }: Props) {
           {/* En M5 los tres tabs comparten los pasos 1–4; las secciones de Fase 2
             (impulso/protección/varianza/meta) llegan en M12–M13 (docs/04 §2). */}
           <form onSubmit={calcular} noValidate className="flex flex-col gap-6">
+            {/* La app calcula solo en USD (MVP): se avisa antes del primer campo. */}
+            <p data-testid="nota-moneda" className="text-sm text-texto-suave">
+              {t(dict, "moneda.nota")}
+            </p>
             <section aria-labelledby="paso-1" className="flex flex-col gap-4">
               <h2 id="paso-1" className="text-lg font-semibold">
                 {t(dict, "pasos.paso1")}
@@ -362,6 +366,8 @@ export default function Calculadora({ locale, dict }: Props) {
                 error={mensaje("capitalInicial")}
                 agrupaMiles
                 locale={locale}
+                moneda={t(dict, "moneda.codigo")}
+                monedaTooltip={t(dict, "moneda.tooltip")}
                 onCambio={(v) => cambiar("capitalInicial", v)}
                 onBlur={() => validarCampo("capitalInicial")}
               />
@@ -379,6 +385,8 @@ export default function Calculadora({ locale, dict }: Props) {
                 error={mensaje("aporteRegimen")}
                 agrupaMiles
                 locale={locale}
+                moneda={t(dict, "moneda.codigo")}
+                monedaTooltip={t(dict, "moneda.tooltip")}
                 onCambio={(v) => cambiar("aporteRegimen", v)}
                 onBlur={() => validarCampo("aporteRegimen")}
               />
@@ -413,6 +421,8 @@ export default function Calculadora({ locale, dict }: Props) {
                     error={mensaje("aporteImpulso")}
                     agrupaMiles
                     locale={locale}
+                    moneda={t(dict, "moneda.codigo")}
+                    monedaTooltip={t(dict, "moneda.tooltip")}
                     onCambio={(v) => cambiar("aporteImpulso", v)}
                     onBlur={() => validarCampo("aporteImpulso")}
                   />

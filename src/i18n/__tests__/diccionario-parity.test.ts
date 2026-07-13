@@ -30,9 +30,15 @@ describe("paridad de diccionarios es ↔ en", () => {
     expect(clavesEn).toEqual(clavesEs);
   });
 
-  it("ningún texto quedó sin traducir (salvo endónimos idioma.*)", () => {
+  it("ningún texto quedó sin traducir (salvo endónimos idioma.* y códigos)", () => {
+    // `moneda.codigo` es un código ISO ("USD"), idéntico en ambos idiomas a
+    // propósito, como los endónimos de idioma.
+    const exentas = new Set(["moneda.codigo"]);
     const sinTraducir = paresEs
-      .filter(([k, v]) => !k.startsWith("idioma.") && mapaEn.get(k) === v)
+      .filter(
+        ([k, v]) =>
+          !k.startsWith("idioma.") && !exentas.has(k) && mapaEn.get(k) === v,
+      )
       .map(([k]) => k);
     expect(sinTraducir).toEqual([]);
   });

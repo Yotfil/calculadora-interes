@@ -16,6 +16,8 @@
 - Números y moneda SOLO vía `formatMoney(valor, locale)` y
   `Intl.NumberFormat(locale)`. USD siempre; el símbolo/formato cambia por locale
   (`$1,000.00` en en-US; `1.000,00 US$` según es-*), la moneda no.
+- Los textos de `moneda.*` (§3) son copy de UI que COMUNICA la moneda al
+  usuario; no son formateo (el literal de formateo sigue solo en `formatMoney`).
 - Cero strings en JSX (regla verificable de CLAUDE.md).
 
 ## 3. Copy canónico — formulario (es)
@@ -36,6 +38,12 @@
 | varianza          | Varianza de la tasa (opcional)    | Puntos por encima y por debajo de tu tasa para ver un escenario prudente y uno optimista.                                                                        |
 | meta              | Meta (opcional)                   | ¿Cuánto quieres tener al final? Calcularemos el aporte mensual necesario.                                                                                        |
 | inflacion         | Inflación anual                   | Promedio histórico de EE. UU.: 3 %. Puedes ajustarla.                                                                                                            |
+
+Moneda visible (MVP solo USD): `moneda.codigo` = "USD" (igual en ambos idiomas)
+· `moneda.nota` = "Todos los montos están en dólares estadounidenses (USD)."
+(línea sobre el Paso 1) · `moneda.tooltip` = "Por ahora, los cálculos son solo
+en dólares (USD). En el futuro podrás elegir otras monedas." (tooltip del badge
+del header y del adorno-select deshabilitado de los campos de dinero).
 
 Avisos suaves: `seccion.incompleta` = "Completa ambos campos para aplicar esta
 sección." · `seccion.clampeada.impulso` = "Tu impulso cubre todo el período." ·

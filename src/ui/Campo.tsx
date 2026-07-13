@@ -29,6 +29,10 @@ interface Props {
   agrupaMiles?: boolean;
   /** Requerido si `agrupaMiles`: define el separador de miles/decimal. */
   locale?: Locale;
+  /** Código de moneda ("USD"): adorno tipo select deshabilitado junto al input. */
+  moneda?: string;
+  /** Tooltip del adorno de moneda (aviso de "próximamente otras monedas"). */
+  monedaTooltip?: string;
   onCambio: (valor: string) => void;
   onBlur: () => void;
 }
@@ -37,6 +41,8 @@ interface Props {
 // inline bajo el campo con `aria-describedby` (docs/05 §5). Un input por instancia.
 // Con `agrupaMiles`, el input MUESTRA el valor con separador de miles del locale,
 // pero el estado sigue siendo el crudo canónico que consume el esquema (miles.ts).
+// Con `moneda`, un select deshabilitado con el código (USD) acompaña al input:
+// comunica la moneda del cálculo y anticipa el selector real de monedas futuras.
 export default function Campo({
   campo,
   label,
@@ -46,6 +52,8 @@ export default function Campo({
   inputMode = "decimal",
   agrupaMiles = false,
   locale,
+  moneda,
+  monedaTooltip,
   onCambio,
   onBlur,
 }: Props) {
@@ -107,6 +115,26 @@ export default function Campo({
     onCambio(crudo);
   }
 
+  const input = (
+    <input
+      ref={inputRef}
+      id={id}
+      data-testid={id}
+      type="text"
+      inputMode={inputMode}
+      value={mostrado}
+      aria-describedby={error ? `${idAyuda} ${idError}` : idAyuda}
+      aria-invalid={error ? true : undefined}
+      onChange={onChange}
+      onBlur={onBlur}
+      className={
+        moneda
+          ? "min-w-0 flex-1 rounded-l border border-borde bg-superficie px-3 py-2 focus-visible:outline-2 focus-visible:outline-accion aria-invalid:border-error"
+          : "rounded border border-borde bg-superficie px-3 py-2 focus-visible:outline-2 focus-visible:outline-accion aria-invalid:border-error"
+      }
+    />
+  );
+
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="font-medium">
@@ -115,19 +143,34 @@ export default function Campo({
       <p id={idAyuda} className="text-sm text-texto-suave">
         {ayuda}
       </p>
-      <input
-        ref={inputRef}
-        id={id}
-        data-testid={id}
-        type="text"
-        inputMode={inputMode}
-        value={mostrado}
-        aria-describedby={error ? `${idAyuda} ${idError}` : idAyuda}
-        aria-invalid={error ? true : undefined}
-        onChange={onChange}
-        onBlur={onBlur}
-        className="rounded border border-borde bg-superficie px-3 py-2 focus-visible:outline-2 focus-visible:outline-accion aria-invalid:border-error"
-      />
+      {moneda ? (
+        <div className="flex items-stretch">
+          {input}
+          {/* El hover se detecta en el span (`group`): los controles
+              deshabilitados no disparan eventos, pero el :hover del padre sí. */}
+          <span className="group relative flex">
+            <select
+              data-testid={`moneda-${campo}`}
+              disabled
+              aria-label={monedaTooltip}
+              className="rounded-r border border-l-0 border-borde bg-fondo px-2 text-sm text-texto-suave"
+            >
+              <option>{moneda}</option>
+            </select>
+            {monedaTooltip && (
+              <span
+                role="tooltip"
+                data-testid={`tooltip-moneda-${campo}`}
+                className="pointer-events-none absolute right-0 bottom-full z-10 mb-1 hidden w-max max-w-56 rounded border border-borde bg-superficie px-2 py-1 text-xs text-texto shadow-md group-hover:block"
+              >
+                {monedaTooltip}
+              </span>
+            )}
+          </span>
+        </div>
+      ) : (
+        input
+      )}
       {error && (
         <p id={idError} data-testid={`error-${campo}`} className="text-sm text-error">
           {error}

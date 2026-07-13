@@ -86,6 +86,16 @@ test.describe("header y footer (branding)", () => {
     await expect(page.locator('header img[src="/favicon.svg"]')).toBeVisible();
   });
 
+  test("el header muestra el badge de moneda (USD) con su tooltip", async ({
+    page,
+  }) => {
+    await page.goto("/es/");
+    const badge = page.getByTestId("badge-moneda");
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText("USD");
+    await expect(badge).toHaveAttribute("title", /USD/);
+  });
+
   test("el footer muestra los metadatos de build (versión · fecha · commit)", async ({
     page,
   }) => {

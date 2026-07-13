@@ -14,6 +14,11 @@
     "avanzada": "Avanzada",
     "experto": "Experto"
   },
+  "moneda": {
+    "codigo": "USD",
+    "nota": "Todos los montos están en dólares estadounidenses (USD).",
+    "tooltip": "Por ahora, los cálculos son solo en dólares (USD). En el futuro podrás elegir otras monedas."
+  },
   "pasos": {
     "paso1": "Paso 1 · Capital inicial",
     "paso2": "Paso 2 · Aportes",

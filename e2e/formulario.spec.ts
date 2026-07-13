@@ -19,6 +19,33 @@ test.describe("formulario Básica (M5)", () => {
     await expect(page.getByTestId("unidad-anios")).toBeChecked();
   });
 
+  test("la moneda (USD) es visible: nota sobre el Paso 1 y adorno en los campos de dinero", async ({
+    page,
+  }) => {
+    await page.goto("/es/");
+    await expect(page.getByTestId("nota-moneda")).toHaveText(
+      "Todos los montos están en dólares estadounidenses (USD).",
+    );
+    // Adorno tipo select deshabilitado junto a cada campo de dinero.
+    for (const campo of ["capitalInicial", "aporteRegimen"]) {
+      const adorno = page.getByTestId(`moneda-${campo}`);
+      await expect(adorno).toBeVisible();
+      await expect(adorno).toBeDisabled();
+      await expect(adorno.locator("option")).toHaveText("USD");
+    }
+    // Los campos que no son de dinero no llevan adorno.
+    await expect(page.getByTestId("moneda-tasaNominalAnual")).toHaveCount(0);
+
+    // Al hacer hover sobre el adorno aparece el tooltip de "otras monedas".
+    const tooltip = page.getByTestId("tooltip-moneda-capitalInicial");
+    await expect(tooltip).toBeHidden();
+    await page.getByTestId("moneda-capitalInicial").hover();
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip).toHaveText(
+      "Por ahora, los cálculos son solo en dólares (USD). En el futuro podrás elegir otras monedas.",
+    );
+  });
+
   test("cambiar de tab conserva los valores (docs/04 §2)", async ({ page }) => {
     await abrir(page, "/es/");
     // El estado crudo es 50000; se muestra 50.000 (separador de miles de es).
