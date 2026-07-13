@@ -9,16 +9,16 @@ import type { Banda } from "./resultado";
  */
 
 /**
- * Ahorro del plan escalonado (Avanzada; solo con impulso aplicado). Como el
- * balance es lineal en los aportes bajo una senda de tasa fija, el "fijo
- * equivalente" F es el aporte mensual constante que alcanza el MISMO balance:
+ * Fijo equivalente (Avanzada; solo con impulso aplicado): el aporte mensual
+ * constante que alcanza el MISMO balance final que el plan escalonado. Como el
+ * balance es lineal en los aportes bajo una senda de tasa fija:
  *   F = (balanceEscalonado − FV(solo capital)) / FV(aporte 1/mes)
- * y el ahorro = F·M − Σaportes escalonados. Sin impulso → null.
+ * ambos FV corridos SIN impulso (misma senda). Sin impulso → null.
  */
-export function ahorroEscalonado(e: Escenario): number | null {
+export function fijoEquivalente(e: Escenario): number | null {
   if (!e.impulso) return null;
 
-  const escalonado = calcular(e);
+  const escalonado = calcular(e).balanceFinal;
   // FV de cada componente con la MISMA senda de tasa (sin impulso).
   const fvCapital = calcular({
     ...e,
@@ -32,9 +32,20 @@ export function ahorroEscalonado(e: Escenario): number | null {
     impulso: undefined,
   }).balanceFinal;
 
-  const fijoEquivalente = (escalonado.balanceFinal - fvCapital) / fvAporteUno;
-  const sumaAportes = escalonado.totalAportado - e.capitalInicial;
-  return fijoEquivalente * e.duracionMeses - sumaAportes;
+  return (escalonado - fvCapital) / fvAporteUno;
+}
+
+/**
+ * Ahorro del plan escalonado (Avanzada; solo con impulso aplicado): cuánto menos
+ * aportas frente al fijo equivalente F que llega al mismo balance:
+ *   ahorro = F·M − Σaportes escalonados. Sin impulso → null.
+ */
+export function ahorroEscalonado(e: Escenario): number | null {
+  const F = fijoEquivalente(e);
+  if (F === null) return null;
+
+  const sumaAportes = calcular(e).totalAportado - e.capitalInicial;
+  return F * e.duracionMeses - sumaAportes;
 }
 
 /**

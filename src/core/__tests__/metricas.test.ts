@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { calcular } from "../calcular";
 import type { Escenario } from "../escenario";
-import { ahorroEscalonado, bandaVarianza, costoProteccion } from "../metricas";
+import {
+  ahorroEscalonado,
+  bandaVarianza,
+  costoProteccion,
+  fijoEquivalente,
+} from "../metricas";
 
 // docs/06 §1 (métricas derivadas). Asserts monetarios: toBeCloseTo(v, 2) ⇒ ±0,01.
 // Todas operan SOBRE resultados ya calculados; re-corren `calcular` con
@@ -28,16 +33,23 @@ describe("ahorro del plan escalonado (docs/06 §1, K1–K2)", () => {
     expect(ahorroEscalonado(E1)).toBeCloseTo(39616.9, 2);
   });
 
-  it("K1: el fijo equivalente reconstruido es 668,06 /mes", () => {
-    // F = (ahorro + Σaportes) / M; Σaportes = totalAportado − capital, M = meses.
-    const ahorro = ahorroEscalonado(E1)!;
-    const sigmaAportes = calcular(E1).totalAportado - E1.capitalInicial;
-    const F = (ahorro + sigmaAportes) / E1.duracionMeses;
-    expect(F).toBeCloseTo(668.06, 2);
+  it("K1: el fijo equivalente sobre E1 = 668,06 /mes", () => {
+    expect(fijoEquivalente(E1)).toBeCloseTo(668.06, 2);
   });
 
-  it("sin impulso → null (métrica solo de Avanzada con impulso aplicado)", () => {
+  it("el ahorro reconstruye F·M − Σaportes con el fijo equivalente", () => {
+    // Contrato entre ambas métricas: ahorro = F·M − Σaportes (docs/06 §1).
+    const F = fijoEquivalente(E1)!;
+    const sigmaAportes = calcular(E1).totalAportado - E1.capitalInicial;
+    expect(ahorroEscalonado(E1)).toBeCloseTo(
+      F * E1.duracionMeses - sigmaAportes,
+      2,
+    );
+  });
+
+  it("sin impulso → null (métricas solo de Avanzada con impulso aplicado)", () => {
     expect(ahorroEscalonado(base())).toBeNull();
+    expect(fijoEquivalente(base())).toBeNull();
   });
 });
 

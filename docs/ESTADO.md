@@ -4,25 +4,33 @@
 
 ## Próximo paso
 
-Sigue la **Fase 2** con el **Módulo 12 (UI tab Avanzada)**: leer `docs/04` §1–3
-+ `docs/05` + `docs/ESTADO.md`. Añadir la sección "Impulso inicial" (campos
-`aniosImpulso` + `aporteImpulso`, ya en esquema/tipos) al tab Avanzada y mostrar
-la **métrica de ahorro** (`ahorroEscalonado(e)`, ya en `core`, K2 = 39 616,90 en
-E1; devuelve `null` sin impulso → no renderizar). También destrabar el ejemplo
-precargado E1/F2 diferido de M6 (`vacio.cta`, "Ver un ejemplo": E1 usa impulso,
-inexistente hasta ahora). Cablear el evento GA4 `calcular` con `con_impulso`
-real (hoy `false` fijo, decisión M7). **M11 cerrado:** las 3 métricas de
-`docs/06` §1 viven en `src/core/metricas.ts` como funciones puras que re-corren
-`calcular` con escenarios modificados (`calcular` intacto; la UI ensambla `banda`
-sobre `Resultado`); devuelven `null` sin la sección. G2 (costo de la protección)
-resuelto aquí. **Estado del deploy (M8):** dominio real `https://helenguevara.com` fijado en
-config/robots/e2e; `netlify.toml` versionado (`astro build`→`dist`, Node 22);
-release 1.0.0 cortado (bump only en `release/1.0.0`). **Trabajo humano pendiente
-de Jef** (no bloquea a Claude): mergear los 3 PRs en orden (feature→dev,
-release→dev, LUEGO dev→main), crear el sitio en Netlify + apuntar el DNS de
-helenguevara.com + HTTPS, alta en Search Console + envío del sitemap. GA4 diferido
-(PUBLIC_GA4_ID vacío → analítica off → sin aviso de cookies en 1.0.0). Gates
-humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
+Sigue la **Fase 2** con el **Módulo 13 (UI tab Experto)**, que la cierra y corta
+el **release 1.1.0**: leer `docs/04` §1–4 + `docs/05` + `docs/06` §1. Añadir al
+tab Experto las secciones colapsadas "Protección final" (`aniosProteccion` +
+`tasaReducida`, ya en esquema/tipos, en el Paso 4) y "Varianza" (`varianza`), y
+mostrar en resultados el **costo de la protección** (`costoProteccion(e)`, ya en
+`core`; G2 = 137 928,15) y la **banda de varianza** (`bandaVarianza(e)`; V1 =
+[564 955,36 ; 816 454,87]) — ambas devuelven `null` sin su sección. **El impulso
+YA vive en Experto** (M12 lo renderiza cuando `tab !== "basica"`) y **`aEscenario`
+YA gatea protección/varianza a Experto** (hecho en M12): M13 solo agrega su UI +
+el render de métricas. `con_proteccion` de GA4 se activa solo cuando la sección
+entra al motor (el cableado ya lee `escenario.proteccion !== undefined`).
+Reutilizar `SeccionColapsable` (M12) para las secciones nuevas y `conNegritas`
+(`src/ui/negritas.tsx`) para el copy con negrita. **Patrón de la métrica (M12,
+replicar):** el core es dueño del número; la UI lo formatea con `formatMoney` y
+cita el copy textual de `docs/07` §4 (`metricas.costoProteccion` con `{n}`/`{costo}`;
+`metricas.banda` con `{tasa}`/`{v}`/`{inferior}`/`{superior}`).
+
+**Deuda observada (NO de M12): la cifra grande muestra centavos**
+(`1.006.968,93 US$`), no dólar entero half-up como pide `docs/02` §7. Es herencia
+de M6 (`CifraGrande` usa `formatMoney` con 2 decimales; F1/F2 e2e afianzan centavos).
+Decidir con Jef si se corrige (tocaría F1/F2/CifraGrande, fuera del alcance de M12).
+
+**Gates humanos pendientes de Jef** (no bloquean a Claude): revisar en_US y las 5
+respuestas FAQ antes de publicar; GA4 diferido (`PUBLIC_GA4_ID` vacío → analítica
+off → sin aviso de cookies); crear el sitio en Netlify + DNS de helenguevara.com +
+HTTPS + alta en Search Console + envío del sitemap. **Claude nunca mergea:** el
+release 1.1.0 (merge dev→main) se corta tras M13.
 
 ## Checklist canónica de módulos
 
@@ -58,7 +66,9 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 - [x] **M11 · Métricas derivadas** [TDD] (`docs/06` §1): `ahorroEscalonado`,
       `costoProteccion`, `bandaVarianza` en `src/core/metricas.ts`; funciones
       puras que re-corren `calcular`; `null` sin la sección. K1–K5/G2/V1 verdes.
-- [ ] **M12 · UI tab Avanzada**: sección "Impulso inicial" + métrica de ahorro.
+- [x] **M12 · UI tab Avanzada**: sección "Impulso inicial" colapsable (Avanzada
+      y Experto) + métrica de ahorro (`fijoEquivalente`/`ahorroEscalonado`) +
+      "Ver un ejemplo" (E1) + `aEscenario` consciente del tab + GA4 real.
 - [ ] **M13 · UI tab Experto**: "Protección final" + varianza + costo de la
       protección. Release 1.1.0.
 
@@ -267,9 +277,9 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
   `v ≤ 0` → `null`. La UI decide si renderizar. `number | null` / `Banda | null`.
 - **M11 · Ahorro = fijo equivalente por linealidad**: como el balance es lineal en
   los aportes bajo senda de tasa fija, `F = (balanceEscalonado − FV(solo capital))
-  / FV(aporte 1/mes)` con AMBOS FV corridos SIN impulso (misma senda), y
+/ FV(aporte 1/mes)` con AMBOS FV corridos SIN impulso (misma senda), y
   `ahorro = F·M − Σaportes`, `M = duracionMeses`, `Σaportes = totalAportado −
-  capitalInicial`. K1 F=668,06 / K2 ahorro=39 616,90.
+capitalInicial`. K1 F=668,06 / K2 ahorro=39 616,90.
 - **M11 · La varianza desplaza SOLO la principal**: basta correr `calcular` con
   `tasaNominalAnual ∓v/±v` porque `construirTasa` deriva los bloques del glide de
   la principal sin tocar `tasaReducida` (docs/02 §8: la varianza modela
@@ -278,7 +288,38 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
   reducida queda intacta (si la contaminara, el superior cambiaría).
 - **M11 · G2 (costo de la protección) resuelto aquí**, no en M10: es métrica
   derivada (compara dos `Resultado`), no motor. `costoProteccion(G1) = 137 928,15
-  = E1 − G1`.
+= E1 − G1`.
+
+- **M12 · `fijoEquivalente` como métrica pura del core** (confirmado con Jef): el
+  copy `metricas.ahorro` (docs/07 §4) necesita DOS cifras, `{fijo}` (F=668,06, K1) y
+  `{ahorro}` (39 616,90, K2). Se extrajo F a `fijoEquivalente(e)` en
+  `src/core/metricas.ts` (función pura, `null` sin impulso) y `ahorroEscalonado` la
+  reusa (`F·M − Σaportes`; K2 intacto). El core es dueño del número; la UI solo
+  formatea. Se descartó derivar F en la UI (acoplaría la fórmula inversa a
+  presentación, contra la cultura "anclas numéricas en tests del core").
+- **M12 · Impulso en Avanzada Y Experto** (confirmado con Jef): docs/04 §1 lo pone
+  en ambos tabs; se renderiza cuando `tab !== "basica"`. `aEscenario(valores, tab)`
+  ahora gatea las secciones por tab (docs/04 §2): impulso en Avanzada/Experto,
+  protección y varianza SOLO en Experto (su UI es M13, pero el gateo ya queda
+  completo). Es el candado del flujo F3: Básica ignora las secciones aunque los
+  valores persistan (nunca se borran solos). Tipo `Tab` en `src/ui/tab.ts`.
+- **M12 · `SeccionColapsable` reutilizable**: botón `aria-expanded`/`aria-controls`
+  - `role=region`; anima la altura 150 ms (docs/05 §4.2) con el truco grid-rows
+    0fr↔1fr y `motion-reduce` para reduced-motion. El contenido cerrado se marca
+    `inert` vía DOM (no tipado en el JSX de React 18) para sacarlo del tab-order y del
+    árbol accesible sin perder la animación. La usará M13 para sus secciones.
+- **M12 · Avisos de sección** (docs/07 §3, nunca errores): "incompleta" con XOR de
+  los dos campos (uno lleno, otro vacío → la sección no se aplica); "clampeada"
+  cuando `anios*12 ≥ duracionMeses` (borde 2 de docs/02 §4). Excluyentes por
+  construcción; se muestran dentro de la sección (solo con ella expandida).
+- **M12 · GA4 `con_impulso`/`con_proteccion` reales**: leen `escenario.impulso/
+proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
+  Protección sale off hasta que M13 la haga tecleable. Cerró la deuda de M7.
+- **M12 · `conNegritas` extraído a `src/ui/negritas.tsx`**: lo comparten
+  `FraseResumen` y la métrica de ahorro (`Resultado`). La ruta de éxito de Calcular
+  se extrajo a `pintar(datos, tab)` (tab explícito, `setTab` es asíncrono) y la
+  comparten el botón Calcular y "Ver un ejemplo" (`cargarEjemplo`, E1: sube
+  Básica→Avanzada para que el impulso aplique; en Experto se queda).
 
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
   `root` en esta máquina y algunos installs fallan con EACCES/EEXIST.
@@ -287,6 +328,10 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 - El motor NO redondea dentro de la iteración; solo la capa de presentación
   redondea. Redondear adentro rompe las anclas de `docs/02`.
+- **Deuda (herencia de M6, detectada en M12):** `docs/02` §7 pide la cifra grande
+  a **dólar entero** (half-up), pero `CifraGrande` usa `formatMoney` (2 decimales)
+  y F1/F2 e2e afianzan centavos (`1.006.968,93 US$`). Corregirlo tocaría
+  `CifraGrande` + F1/F2; pendiente de decisión con Jef (no es de M12).
 - La tasa reducida del glide usa la MISMA convención (nominal + selector) que
   la principal; no convertirla dos veces.
 - `Intl.NumberFormat` difiere entre Node y navegador en espacios no separables:
@@ -355,6 +400,35 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 ## Historial de sesiones
 
+- **2026-07-12 · Sesión 12 — M12 UI tab Avanzada** ✅. Rama
+  `feature/modulo-12-ui-avanzada` (7 commits granulares sobre `dev`). Tarea
+  estructural multi-archivo; confirmadas 2 decisiones con Jef antes de codear:
+  (1) `{fijo}` de la métrica → nueva función pura `fijoEquivalente` en el core
+  (TDD, K1=668,06), no derivada en la UI; (2) impulso en Avanzada **Y** Experto
+  (no solo Avanzada). Commits: (1) core `fijoEquivalente` + `ahorroEscalonado`
+  refactorizada para reusarla (K2 intacto); (2) extraer `conNegritas` a
+  `src/ui/negritas.tsx`; (3) `aEscenario(valores, tab)` gatea secciones por tab
+  (impulso en a/e; protección/varianza solo e) + tipo `Tab`; (4) `SeccionColapsable`
+  (aria + `inert` + animación grid-rows 150 ms) + sección Impulso en el Paso 2
+  (tab≠básica) con avisos incompleta/clampeada; (5) métrica `metricas.ahorro` en
+  `Resultado` (solo con impulso) + GA4 `con_impulso`/`con_proteccion` reales;
+  (6) "Ver un ejemplo" (`cargarEjemplo` E1, `pintar` compartido); (7) e2e
+  `avanzada.spec`. 170 unit (+1: K1 `fijoEquivalente` + contrato con `ahorroEscalonado`
+  - guarda null; los tests de `aEscenario` migrados a pasar `tab` + 3 casos de gateo)
+  - 39 e2e (+3: F2 ejemplo→1 006 968,93 con métrica 668,06/39 616,90, Básica ignora
+    impulso + persistencia, avisos incompleta/clampeada), lint + build verdes.
+    Verificación visual claro/oscuro con screenshots (cifra, sección expandida, caja
+    de métrica, tabla con impulso años 1–5). Revisión de diff con subagente fresco
+    contra docs/04 §1–4/§6, 06 §1–2, 07 §3–4 y 02 §4: reimplementó el motor en Python
+    y reprodujo K1/K2/E1/ref-Básica al centavo; sin bloqueantes ni accionables. Sus 2
+    NITs (foco a campo de impulso con la sección cerrada por timing de `inert`;
+    acoplamiento cosmético de `valores.aniosImpulso`) quedan como camino inalcanzable
+    con degradación elegante (la sección se abre y hace scroll) → no aplicados,
+    documentados. **Trampa flaky confirmada:** F4 (M5) falla intermitente SOLO en la
+    suite completa (hidratación fantasma del preview recién construido, ESTADO); pasa
+    aislado y en re-corridas → no es de M12. **Deuda detectada (M6, no M12):** la
+    cifra grande muestra centavos, no dólar entero (docs/02 §7) — anotada arriba.
+    `main` sigue sin avanzar (el release 1.1.0 es tras M13).
 - **2026-07-12 · Sesión 11 — M11 Métricas derivadas** ✅. Rama
   `feature/modulo-11-metricas-derivadas` (2 commits granulares sobre `dev`: extraer
   tipo `Banda` + feat de métricas). TDD directo (tablas cerradas `docs/06` §1, sin
