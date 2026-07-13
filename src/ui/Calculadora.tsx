@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 import { track } from "../analytics/track";
-import { calcular as calcularMotor } from "../core";
+import {
+  ahorroEscalonado,
+  calcular as calcularMotor,
+  fijoEquivalente,
+} from "../core";
 import type { Resultado as ResultadoMotor } from "../core";
 import type { Diccionario } from "../i18n/diccionario";
 import type { Locale } from "../i18n/locale";
@@ -26,6 +30,9 @@ interface Salida {
   capitalInicial: number;
   duracion: number;
   duracionUnidad: "a" | "m";
+  /** Métricas de Avanzada (docs/06 §1): null si no hay impulso aplicado. */
+  ahorro: number | null;
+  fijo: number | null;
   animar: boolean;
 }
 
@@ -176,22 +183,25 @@ export default function Calculadora({ locale, dict }: Props) {
     }
     setErrores({});
     const datos = parsed.data;
-    // El tab define qué entra al motor (docs/04 §2): en Básica solo pasos 1–4;
-    // las secciones de Avanzada/Experto llegan en M12–M13.
-    const resultado = calcularMotor(aEscenario(datos, tab));
+    // El tab define qué entra al motor (docs/04 §2): Básica ignora el impulso;
+    // Avanzada/Experto lo aplican. Las métricas se derivan del mismo escenario.
+    const escenario = aEscenario(datos, tab);
+    const resultado = calcularMotor(escenario);
     setSalida({
       resultado,
       capitalInicial: datos.capitalInicial,
       duracion: datos.duracion,
       duracionUnidad: datos.duracionUnidad,
+      ahorro: ahorroEscalonado(escenario),
+      fijo: fijoEquivalente(escenario),
       animar: !prefiereReducir(),
     });
-    // Telemetría (docs/06 §2). En Fase 1 solo existe la Básica: impulso y
-    // protección son features de M12/M13, así que van en false fijos.
+    // Telemetría (docs/06 §2): `con_impulso`/`con_proteccion` reflejan lo que de
+    // verdad entró al motor según el tab (protección es UI de M13, hoy siempre off).
     track("calcular", {
       tab: TAB_EVENTO[tab] ?? "b",
-      con_impulso: false,
-      con_proteccion: false,
+      con_impulso: escenario.impulso !== undefined,
+      con_proteccion: escenario.proteccion !== undefined,
     });
   }
 
@@ -387,6 +397,8 @@ export default function Calculadora({ locale, dict }: Props) {
             capitalInicial={salida.capitalInicial}
             duracion={salida.duracion}
             duracionUnidad={salida.duracionUnidad}
+            ahorro={salida.ahorro}
+            fijo={salida.fijo}
             locale={locale}
             dict={dict}
             animar={salida.animar}
