@@ -4,20 +4,31 @@
 
 ## Próximo paso
 
-Arranca la **Fase 2** (release 1.1.0). Módulo 9 (Motor escalonado) [TDD]: leer
-`docs/02` §4 + `docs/ESTADO.md`. Tabla de casos cerrada → va directo a TDD (tests
-primero, rojo, implementación; tolerancia ±0,01 USD). El impulso escalonado
-construye el hook `aporte(t)` dentro de `calcular` (el bucle NO cambia; decisión
-de M2). Firma pública ya declarada: `Escenario.impulso?: { anios, aporteMensual }`
-(`docs/01` §5).
-**Estado del deploy (M8):** dominio real `https://helenguevara.com` fijado en
-config/robots/e2e; `netlify.toml` versionado (`astro build`→`dist`, Node 22);
-release 1.0.0 cortado (bump only en `release/1.0.0`). **Trabajo humano pendiente
-de Jef** (no bloquea a Claude): mergear los 3 PRs en orden (feature→dev,
-release→dev, LUEGO dev→main), crear el sitio en Netlify + apuntar el DNS de
-helenguevara.com + HTTPS, alta en Search Console + envío del sitemap. GA4 diferido
-(PUBLIC_GA4_ID vacío → analítica off → sin aviso de cookies en 1.0.0). Gates
-humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
+**M13 cerrado: la Fase 2 está completa.** Sigue el **release 1.1.0** (CLAUDE.md
+§6, precondición: PR de M13 `feature/modulo-13-ui-experto → dev` mergeado): rama
+`release/1.1.0` desde `dev` actualizado con ÚNICAMENTE el bump
+(`npm version minor --no-git-tag-version` → 1.1.0; minor = features de Fase 2),
+mergeada a `dev`; el release en sí es el merge `dev → main` (el footer del build
+debe mostrar `v1.1.0`). **Claude nunca mergea:** se entregan los links de PR
+(feature→dev ya entregado; luego release→dev y dev→main). Tras el release arranca
+la **Fase 3** con **M14 (motor modo meta)** [TDD], leer `docs/03` §1.
+
+**Deuda observada (NO de M13, heredada de M6): la cifra grande muestra centavos**
+(`1.006.968,93 US$`), no dólar entero half-up como pide `docs/02` §7. Es herencia
+de M6 (`CifraGrande` usa `formatMoney` con 2 decimales; F1/F2 e2e afianzan centavos).
+Decidir con Jef si se corrige (tocaría F1/F2/CifraGrande, fuera del alcance de M13).
+
+**NIT cosmético de M13 (documentado, no aplicado):** la sección "Varianza" es un
+campo único (docs/07 §3 no le da `.titulo`, a diferencia de impulso/protección),
+así que reusa `campos.varianza.label` como título del colapsable Y como label del
+campo → el texto "Varianza de la tasa (opcional)" aparece dos veces. Arreglarlo
+exigiría una clave de copy nueva (decisión de Jef); se deja como está.
+
+**Gates humanos pendientes de Jef** (no bloquean a Claude): revisar en_US y las 5
+respuestas FAQ antes de publicar; GA4 diferido (`PUBLIC_GA4_ID` vacío → analítica
+off → sin aviso de cookies); crear el sitio en Netlify + DNS de helenguevara.com +
+HTTPS + alta en Search Console + envío del sitemap. **Claude nunca mergea:** el
+release 1.1.0 (merge dev→main) se corta tras M13.
 
 ## Checklist canónica de módulos
 
@@ -45,13 +56,21 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 ### Fase 2 — Avanzada y Experto (release 1.1.0)
 
-- [ ] **M9 · Motor escalonado** [TDD] (`docs/02` §4).
-- [ ] **M10 · Motor glide path gradual** [TDD] (`docs/02` §5).
-- [ ] **M11 · Métricas derivadas** [TDD]: ahorro del escalonado, costo de la
-      protección, banda de varianza (`docs/06` §1).
-- [ ] **M12 · UI tab Avanzada**: sección "Impulso inicial" + métrica de ahorro.
-- [ ] **M13 · UI tab Experto**: "Protección final" + varianza + costo de la
-      protección. Release 1.1.0.
+- [x] **M9 · Motor escalonado** [TDD] (`docs/02` §4): hook `aporte(t)` con
+      `corte = min(N*12, duracionMeses)`; bucle intacto. E1–E4 verdes.
+- [x] **M10 · Motor glide path gradual** [TDD] (`docs/02` §5): hook `tasa(t)` en
+      `construirTasa(e)`; `N' = min(N, ceil(dur/12))`, bloques desde el final;
+      bucle intacto. G1/G3/G4/G5 verdes (G2 → M11).
+- [x] **M11 · Métricas derivadas** [TDD] (`docs/06` §1): `ahorroEscalonado`,
+      `costoProteccion`, `bandaVarianza` en `src/core/metricas.ts`; funciones
+      puras que re-corren `calcular`; `null` sin la sección. K1–K5/G2/V1 verdes.
+- [x] **M12 · UI tab Avanzada**: sección "Impulso inicial" colapsable (Avanzada
+      y Experto) + métrica de ahorro (`fijoEquivalente`/`ahorroEscalonado`) +
+      "Ver un ejemplo" (E1) + `aEscenario` consciente del tab + GA4 real.
+- [x] **M13 · UI tab Experto**: secciones colapsables "Protección final"
+      (`aniosProteccion` + `tasaReducida`) y "Varianza" (`varianza`) en el Paso 4
+      (solo Experto) + render de "costo de la protección" (G2) y "banda de
+      varianza" (V1) en resultados + GA4 `con_proteccion` real. Cierra la Fase 2.
 
 ### Fase 3 — Meta, inflación y compartir (release 1.2.0)
 
@@ -225,7 +244,103 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
   redirector fino se excluye del sitemap y además lleva `<meta robots noindex>`
   por si un crawler sin JS lo alcanza; SIN canonical para no mezclar señales.
 
-## Trampas conocidas
+- **M9 · Hook `aporte(t)` en `construirAporte(e)`**: función pura junto a
+  `calcular` que devuelve el aporte por mes. Sin `impulso` → régimen constante
+  (comportamiento idéntico a M2). Con `impulso` → `X` mientras `t ≤ corte`,
+  luego régimen; `corte = min(anios*12, duracionMeses)` (el `min` ES el clampeo
+  del borde 2 de `docs/02` §4). El bucle de `calcular` no cambió: solo se
+  sustituyó la línea inline de `aporte` por la llamada (decisión M2 al pie de la
+  letra). `t ≤ corte` (no `<`): con N=2/30m da meses 1–24 con X (borde 3).
+
+- **M10 · Hook `tasa(t)` en `construirTasa(e)`**: función pura junto a `calcular`
+  (espeja a `construirAporte`). Sin `proteccion` → `() => iMes` constante
+  (idéntico a M2). Con `proteccion` → escalera de `docs/02` §5 literal:
+  `bloques (N') = min(anios, ceil(dur/12))`, `inicioProt = dur − N'*12`; para
+  `t > inicioProt`, `j = ceil((dur − t + 1)/12)` (bloque DESDE EL FINAL, 1 = último),
+  `k = N' − j + 1`, `r_k = principal − (principal − reducida)*k/N'`, y
+  `tasa(t) = tasaMensualEquivalente(r_k, frecuencia)` (conversión ÚNICA, misma
+  convención §1). El bucle no cambió. `construirTasa`/`construirAporte` son
+  independientes → impulso y protección conviven sin regla de conflicto (borde 5,
+  G1 usa ambos). `construirTasa` queda interna (no se exporta: barrel = firma
+  pública, decisión M2); la escalera se fija por balance final, que ya discrimina
+  la trampa "desde el final" (G5 = 3 227,53 solo sale contando desde el final).
+
+- **M11 · Las 3 métricas viven en `core` como funciones puras, `calcular`
+  intacto** (confirmado con Jef): `ahorroEscalonado`/`costoProteccion`/
+  `bandaVarianza` en `src/core/metricas.ts`, exportadas del barrel. Re-corren
+  `calcular` con escenarios modificados (patrón "compara dos corridas"); no tocan
+  el bucle. `calcular` NO llena `Resultado.banda` (una sola responsabilidad): la
+  UI la ensambla con `bandaVarianza(e)`. El tipo `Banda` se extrajo de `Resultado`
+  a un tipo nombrado y exportable.
+- **M11 · Guarda `null` cuando falta la sección** (confirmado con Jef): ahorro sin
+  `impulso` → `null`; costo sin `proteccion` → `null`; banda sin `varianza` o
+  `v ≤ 0` → `null`. La UI decide si renderizar. `number | null` / `Banda | null`.
+- **M11 · Ahorro = fijo equivalente por linealidad**: como el balance es lineal en
+  los aportes bajo senda de tasa fija, `F = (balanceEscalonado − FV(solo capital))
+/ FV(aporte 1/mes)` con AMBOS FV corridos SIN impulso (misma senda), y
+  `ahorro = F·M − Σaportes`, `M = duracionMeses`, `Σaportes = totalAportado −
+capitalInicial`. K1 F=668,06 / K2 ahorro=39 616,90.
+- **M11 · La varianza desplaza SOLO la principal**: basta correr `calcular` con
+  `tasaNominalAnual ∓v/±v` porque `construirTasa` deriva los bloques del glide de
+  la principal sin tocar `tasaReducida` (docs/02 §8: la varianza modela
+  incertidumbre, no la decisión de protección). Nominal recortado a [0,100]
+  (docs/02 §6): 0,5 %−1 → 0 %; 99,5 %+1 → 100 %. Un test con glide fija que la
+  reducida queda intacta (si la contaminara, el superior cambiaría).
+- **M11 · G2 (costo de la protección) resuelto aquí**, no en M10: es métrica
+  derivada (compara dos `Resultado`), no motor. `costoProteccion(G1) = 137 928,15
+= E1 − G1`.
+
+- **M12 · `fijoEquivalente` como métrica pura del core** (confirmado con Jef): el
+  copy `metricas.ahorro` (docs/07 §4) necesita DOS cifras, `{fijo}` (F=668,06, K1) y
+  `{ahorro}` (39 616,90, K2). Se extrajo F a `fijoEquivalente(e)` en
+  `src/core/metricas.ts` (función pura, `null` sin impulso) y `ahorroEscalonado` la
+  reusa (`F·M − Σaportes`; K2 intacto). El core es dueño del número; la UI solo
+  formatea. Se descartó derivar F en la UI (acoplaría la fórmula inversa a
+  presentación, contra la cultura "anclas numéricas en tests del core").
+- **M12 · Impulso en Avanzada Y Experto** (confirmado con Jef): docs/04 §1 lo pone
+  en ambos tabs; se renderiza cuando `tab !== "basica"`. `aEscenario(valores, tab)`
+  ahora gatea las secciones por tab (docs/04 §2): impulso en Avanzada/Experto,
+  protección y varianza SOLO en Experto (su UI es M13, pero el gateo ya queda
+  completo). Es el candado del flujo F3: Básica ignora las secciones aunque los
+  valores persistan (nunca se borran solos). Tipo `Tab` en `src/ui/tab.ts`.
+- **M12 · `SeccionColapsable` reutilizable**: botón `aria-expanded`/`aria-controls`
+  - `role=region`; anima la altura 150 ms (docs/05 §4.2) con el truco grid-rows
+    0fr↔1fr y `motion-reduce` para reduced-motion. El contenido cerrado se marca
+    `inert` vía DOM (no tipado en el JSX de React 18) para sacarlo del tab-order y del
+    árbol accesible sin perder la animación. La usará M13 para sus secciones.
+- **M12 · Avisos de sección** (docs/07 §3, nunca errores): "incompleta" con XOR de
+  los dos campos (uno lleno, otro vacío → la sección no se aplica); "clampeada"
+  cuando `anios*12 ≥ duracionMeses` (borde 2 de docs/02 §4). Excluyentes por
+  construcción; se muestran dentro de la sección (solo con ella expandida).
+- **M12 · GA4 `con_impulso`/`con_proteccion` reales**: leen `escenario.impulso/
+proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
+  Protección sale off hasta que M13 la haga tecleable. Cerró la deuda de M7.
+- **M12 · `conNegritas` extraído a `src/ui/negritas.tsx`**: lo comparten
+  `FraseResumen` y la métrica de ahorro (`Resultado`). La ruta de éxito de Calcular
+  se extrajo a `pintar(datos, tab)` (tab explícito, `setTab` es asíncrono) y la
+  comparten el botón Calcular y "Ver un ejemplo" (`cargarEjemplo`, E1: sube
+  Básica→Avanzada para que el impulso aplique; en Experto se queda).
+
+- **M13 · Puro UI, patrón de Impulso replicado**: las dos secciones colapsables
+  del Paso 4 (`SeccionColapsable id="seccion-proteccion"`/`"seccion-varianza"`,
+  solo `tab === "experto"`) y sus avisos espejan a Impulso. `avisoProteccion`:
+  `seccion.incompleta` (XOR de `aniosProteccion`/`tasaReducida`),
+  `seccion.clampeada.proteccion` (`anios*12 ≥ duracionMeses`). Varianza es campo
+  único: sin aviso. El core (métricas), el esquema (3 campos) y `aEscenario`
+  (gateo a Experto) ya existían; M13 no los tocó.
+- **M13 · `EJEMPLO_E1` debe llevar TODAS las claves** (`aniosProteccion`/
+  `tasaReducida`/`varianza` en `""`): `setValores` reemplaza el objeto entero y
+  la UI de Experto lee `valores.aniosProteccion.trim()` en `avisoProteccion`. Sin
+  las claves vacías, "Ver un ejemplo" en Experto crasheaba el render (undefined.trim).
+  Mismo cuidado con cualquier preset futuro (URL de M18).
+- **M13 · `{tasa}`/`{v}` de la banda son porcentaje, no dinero**: se formatean con
+  `Intl.NumberFormat(localeIntl(locale))` (mismo patrón que `{mult}` de
+  `FraseResumen`), nunca con `formatMoney` (que lleva `US$`). `costo` e
+  `inferior`/`superior` sí van por `formatMoney`. Se pasan a `Resultado` los
+  escalares `aniosProteccion` (`{n}`), `tasa`, `varianza` además de `costo`/`banda`.
+- **M13 · GA4 `con_proteccion` ya es real** sin cambios de cableado: `pintar` leía
+  `escenario.proteccion !== undefined` desde M12; hacer los campos tecleables lo
+  activó. Cerró la deuda de M7/M12.
 
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
   `root` en esta máquina y algunos installs fallan con EACCES/EEXIST.
@@ -234,6 +349,10 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 - El motor NO redondea dentro de la iteración; solo la capa de presentación
   redondea. Redondear adentro rompe las anclas de `docs/02`.
+- **Deuda (herencia de M6, detectada en M12):** `docs/02` §7 pide la cifra grande
+  a **dólar entero** (half-up), pero `CifraGrande` usa `formatMoney` (2 decimales)
+  y F1/F2 e2e afianzan centavos (`1.006.968,93 US$`). Corregirlo tocaría
+  `CifraGrande` + F1/F2; pendiente de decisión con Jef (no es de M12).
 - La tasa reducida del glide usa la MISMA convención (nominal + selector) que
   la principal; no convertirla dos veces.
 - `Intl.NumberFormat` difiere entre Node y navegador en espacios no separables:
@@ -302,6 +421,117 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 ## Historial de sesiones
 
+- **2026-07-12 · Sesión 13 — M13 UI tab Experto** ✅. Rama
+  `feature/modulo-13-ui-experto` (3 commits granulares sobre `dev`). Tarea
+  estructural multi-archivo (Plan Mode + confirmación de alcance con Jef).
+  **Hallazgo confirmado en la apertura: M13 es puro UI** — core (métricas M11),
+  esquema (3 campos M3), `aEscenario` (gateo a Experto M12) e i18n ya listos y
+  verdes; solo faltaban los campos/secciones del formulario y el render de las
+  métricas. Commits: (1) secciones colapsables "Protección final" + "Varianza" en
+  el Paso 4 (solo Experto), avisos incompleta/clampeada, orden de foco + auto-apertura
+  al error, `EJEMPLO_E1` con las 3 claves vacías (bug de crash descubierto por el
+  e2e: `undefined.trim()` en `avisoProteccion` al "Ver un ejemplo" en Experto;
+  plegado al commit 1 vía `--fixup` + autosquash); (2) render de "costo de la
+  protección" y "banda de varianza" en `Resultado` (`pintar` deriva `costoProteccion`/
+  `bandaVarianza` del mismo escenario; `{tasa}`/`{v}` como porcentaje vía Intl, no
+  `formatMoney`) + GA4 `con_proteccion` real; (3) e2e `experto.spec.ts`. 169 unit
+  (sin cambios: el core ya cubría G2/V1) + 43 e2e (+4: costo G2=137 928,15, banda
+  V1=[564 955,36 ; 816 454,87], Básica ignora la protección + persistencia, avisos
+  incompleta/clampeada), lint + build verdes. **Trampa e2e:** con `tab-experto` +
+  `ver-ejemplo` seguidos, `cargarEjemplo` puede leer el `tab` previo (commit de
+  React aún no propagado) y saltar a Avanzada → se espera `aria-selected="true"`
+  de Experto antes de "Ver un ejemplo". Verificación visual claro/oscuro con
+  screenshots (dos secciones expandidas + tres cajas de métrica, contraste AA).
+  Revisión de diff con subagente fresco contra docs/04 §1–4/§6, 05, 06 §1–2 y 07
+  §3–4: sin bloqueantes ni accionables; verificó copy canónico, tokens semánticos,
+  moneda vía `formatMoney`, gateo de métricas a Experto y GA4. Su único NIT (texto
+  de "Varianza" duplicado por ser campo único sin `.titulo`) es coherente con la
+  spec → documentado, no aplicado (exigiría clave de copy nueva, decisión de Jef).
+  **Trampa flaky confirmada de nuevo:** F4 (M5) falla en la suite completa
+  (hidratación fantasma del preview), pasa aislado → no es de M13. `main` sigue sin
+  avanzar: el release 1.1.0 (dev→main) se corta tras mergear M13.
+- **2026-07-12 · Sesión 12 — M12 UI tab Avanzada** ✅. Rama
+  `feature/modulo-12-ui-avanzada` (7 commits granulares sobre `dev`). Tarea
+  estructural multi-archivo; confirmadas 2 decisiones con Jef antes de codear:
+  (1) `{fijo}` de la métrica → nueva función pura `fijoEquivalente` en el core
+  (TDD, K1=668,06), no derivada en la UI; (2) impulso en Avanzada **Y** Experto
+  (no solo Avanzada). Commits: (1) core `fijoEquivalente` + `ahorroEscalonado`
+  refactorizada para reusarla (K2 intacto); (2) extraer `conNegritas` a
+  `src/ui/negritas.tsx`; (3) `aEscenario(valores, tab)` gatea secciones por tab
+  (impulso en a/e; protección/varianza solo e) + tipo `Tab`; (4) `SeccionColapsable`
+  (aria + `inert` + animación grid-rows 150 ms) + sección Impulso en el Paso 2
+  (tab≠básica) con avisos incompleta/clampeada; (5) métrica `metricas.ahorro` en
+  `Resultado` (solo con impulso) + GA4 `con_impulso`/`con_proteccion` reales;
+  (6) "Ver un ejemplo" (`cargarEjemplo` E1, `pintar` compartido); (7) e2e
+  `avanzada.spec`. 170 unit (+1: K1 `fijoEquivalente` + contrato con `ahorroEscalonado`
+  - guarda null; los tests de `aEscenario` migrados a pasar `tab` + 3 casos de gateo)
+  - 39 e2e (+3: F2 ejemplo→1 006 968,93 con métrica 668,06/39 616,90, Básica ignora
+    impulso + persistencia, avisos incompleta/clampeada), lint + build verdes.
+    Verificación visual claro/oscuro con screenshots (cifra, sección expandida, caja
+    de métrica, tabla con impulso años 1–5). Revisión de diff con subagente fresco
+    contra docs/04 §1–4/§6, 06 §1–2, 07 §3–4 y 02 §4: reimplementó el motor en Python
+    y reprodujo K1/K2/E1/ref-Básica al centavo; sin bloqueantes ni accionables. Sus 2
+    NITs (foco a campo de impulso con la sección cerrada por timing de `inert`;
+    acoplamiento cosmético de `valores.aniosImpulso`) quedan como camino inalcanzable
+    con degradación elegante (la sección se abre y hace scroll) → no aplicados,
+    documentados. **Trampa flaky confirmada:** F4 (M5) falla intermitente SOLO en la
+    suite completa (hidratación fantasma del preview recién construido, ESTADO); pasa
+    aislado y en re-corridas → no es de M12. **Deuda detectada (M6, no M12):** la
+    cifra grande muestra centavos, no dólar entero (docs/02 §7) — anotada arriba.
+    `main` sigue sin avanzar (el release 1.1.0 es tras M13).
+- **2026-07-12 · Sesión 11 — M11 Métricas derivadas** ✅. Rama
+  `feature/modulo-11-metricas-derivadas` (2 commits granulares sobre `dev`: extraer
+  tipo `Banda` + feat de métricas). TDD directo (tablas cerradas `docs/06` §1, sin
+  Plan Mode). Decisión con Jef: las 3 métricas viven en `src/core/metricas.ts` como
+  funciones puras que re-corren `calcular` con escenarios modificados, `calcular`
+  INTACTO (una sola responsabilidad; la UI ensambla `banda` sobre `Resultado`);
+  devuelven `null` sin la sección requerida. Anclas fijadas corriendo la
+  implementación de referencia (`calcular`, ya validada por N1–G5): `ahorroEscalonado`
+  K1 F=668,06 / K2 39 616,90; `costoProteccion` K3/G2 137 928,15 (E1−G1, diferido de
+  M10); `bandaVarianza` V1 [564 955,36 ; 816 454,87]. Tests primero, rojo verificado
+  (módulo inexistente), luego implementación. 165 unit verdes (+14: K1–K5, G2, V1,
+  clips [0,100] inferior y superior, guardas null, glide-no-contamina-reducida),
+  lint verde. Revisión de diff con subagente fresco contra `docs/06` §1 y `docs/02`
+  §3–8: reimplementó el motor en Python y reprodujo las 11 anclas al centavo; sin
+  bloqueantes. Su único accionable (falta el test del recorte SUPERIOR a 100, solo
+  estaba el inferior a 0) se aplicó (`tasa 99,5 % + v=1 → 100 %`); su NIT (comentario
+  de `recortar` documentaba solo el borde inferior) también. `main` sigue sin avanzar
+  (el release 1.1.0 es tras M13).
+- **2026-07-12 · Sesión 10 — M10 Motor glide path gradual (protección final)** ✅.
+  Rama `feature/modulo-10-motor-glide` (1 commit sobre `dev`). TDD directo (tabla
+  cerrada §5, sin Plan Mode): tests G1/G3/G4/G5 primero, rojo verificado (los 4
+  fallan; la protección se ignoraba), luego implementación. G2 (costo de la
+  protección) diferido a M11 por acuerdo con Jef (es métrica derivada, no motor).
+  El glide se implementó como `construirTasa(e)` (función pura junto a `calcular`,
+  espeja a `construirAporte`): arma el hook `tasa(t)` con la escalera de §5
+  (bloques DESDE EL FINAL, `N' = min(anios, ceil(dur/12))`, reducida convertida
+  una sola vez con la misma convención §1). El bucle de `calcular` NO cambió (solo
+  la línea inline de `tasa` → llamada; decisión M2). 151 unit verdes (+4: G1
+  869 040,78 con impulso+protección convivientes / G3 43 579,79 / G4 clampeo
+  16 136,34 / G5 no múltiplo 3 227,53), lint verde. Diff mínimo aditivo. Revisión
+  de diff con subagente fresco contra `docs/02` §5: reimplementó el motor en
+  Python y reprodujo los 4 números al centavo; sin bloqueantes ni accionables
+  críticos. Su único accionable era OPCIONAL (test que fije la partición de
+  bloques) → no aplicado: exigiría exportar `construirTasa` (rompe barrel = firma
+  pública) o asserts frágiles, y el balance final ya discrimina la trampa "desde
+  el final". `main` sigue sin avanzar (el release 1.1.0 es tras M13).
+- **2026-07-12 · Sesión 9 — M9 Motor escalonado (impulso inicial)** ✅. Rama
+  `feature/modulo-09-motor-escalonado` (1 commit sobre `dev`). Arranca la Fase 2.
+  TDD directo (tabla de casos cerrada, sin Plan Mode): tests E1–E4 primero, rojo
+  verificado (E1/E2/E4 fallan, E3 pasa por no usar impulso), luego implementación.
+  El impulso se implementó como `construirAporte(e)` (función pura junto a
+  `calcular`) que arma el hook `aporte(t)`: `corte = min(anios*12, duracionMeses)`,
+  `aporte = X si t ≤ corte, régimen si no`. El bucle de `calcular` NO cambió (solo
+  la línea inline de `aporte` → llamada; decisión M2). 147 unit verdes (+5: E1–E4
+  de `docs/02` §4 con números exactos 1 006 968,93 / 7 099,81 / 677 839,48 /
+  20 890,91, más un borde 4 con X=0), lint verde. Diff mínimo aditivo: se evitó
+  `prettier --write` sobre los archivos (reflujo ajeno de bloques preexistentes,
+  trampa de M7) → los archivos no quedan prettier-clean pero el candado real es
+  eslint. Revisión de diff con subagente fresco contra `docs/02` §4: sin
+  bloqueantes; reimplementó el motor desde la spec y confirmó los 4 números
+  exactos, el corte sin off-by-one (`t ≤ corte`) y el bucle/boundaries intactos.
+  Sus 2 NITs se aplicaron (comentario de cabecera §2–3 → §2–4; test dedicado del
+  borde 4 con X=0). `main` sigue sin avanzar (el release 1.1.0 es tras M13).
 - **2026-07-12 · Sesión 8 — M8 Deploy + release 1.0.0** ✅. Rama
   `feature/modulo-08-deploy` (2 commits) + `release/1.0.0` (1 commit), ambas sobre
   `dev`. Plan Mode. Tarea de infra + release, sin lógica de producto. Dominio real

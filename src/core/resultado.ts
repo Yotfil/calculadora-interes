@@ -1,5 +1,11 @@
 import type { FilaAnual } from "./fila-anual";
 
+/** Banda de varianza (docs/02 §8): balance con tasa−v y tasa+v. */
+export interface Banda {
+  inferior: number;
+  superior: number;
+}
+
 /**
  * Salida del motor (docs/01 §5). Números crudos en float64: el redondeo es
  * responsabilidad exclusiva de la capa de presentación (docs/02 §7).
@@ -13,6 +19,9 @@ export interface Resultado {
   interesTotal: number;
   /** balanceFinal / totalAportado; 0 si totalAportado es 0. */
   multiplicador: number;
-  /** Banda de varianza (docs/02 §8). Se llena en M11. */
-  banda?: { inferior: number; superior: number };
+  /**
+   * Banda de varianza (docs/02 §8). `calcular` no la llena (una sola
+   * responsabilidad): la UI la ensambla con `bandaVarianza(e)`.
+   */
+  banda?: Banda;
 }

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { calcular } from "../calcular";
 import type { Escenario, FrecuenciaCap } from "../escenario";
 
-// Tablas de docs/02 §2–3. Asserts monetarios: toBeCloseTo(v, 2) ⇒ ±0,01 USD.
+// Tablas de docs/02 §2–4. Asserts monetarios: toBeCloseTo(v, 2) ⇒ ±0,01 USD.
 
 function escenario(parcial: Partial<Escenario>): Escenario {
   return {
@@ -86,6 +86,122 @@ describe("filas anuales (docs/02 §2)", () => {
     expect(r.filas[0].aportado).toBeCloseTo(1_200, 2);
     expect(r.filas[0].interes).toBeCloseTo(0, 2);
     expect(r.filas[0].balance).toBeCloseTo(2_200, 2);
+  });
+});
+
+describe("impulso inicial — aportes escalonados (docs/02 §4)", () => {
+  it("E1 canónico: P=10 000; X=1 000, N=5; régimen 420; 300 m → 1 006 968,93", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 10_000,
+        aporteRegimen: 420,
+        duracionMeses: 300,
+        impulso: { anios: 5, aporteMensual: 1_000 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(1_006_968.93, 2);
+  });
+
+  it("E2 simple: P=0; X=200, N=2; régimen 100; 36 m → 7 099,81", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 0,
+        aporteRegimen: 100,
+        duracionMeses: 36,
+        impulso: { anios: 2, aporteMensual: 200 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(7_099.81, 2);
+  });
+
+  it("E3 sección vacía: sin impulso = caso §3 exacto (677 839,48)", () => {
+    const r = calcular(
+      escenario({ capitalInicial: 10_000, aporteRegimen: 420, duracionMeses: 300 }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(677_839.48, 2);
+  });
+
+  it("E4 clampeo: P=0; X=500, N=5; régimen 100; 36 m → 20 890,91 (≡ 36 m de 500)", () => {
+    const conImpulso = calcular(
+      escenario({
+        capitalInicial: 0,
+        aporteRegimen: 100,
+        duracionMeses: 36,
+        impulso: { anios: 5, aporteMensual: 500 },
+      }),
+    );
+    const todoRegimen500 = calcular(
+      escenario({ capitalInicial: 0, aporteRegimen: 500, duracionMeses: 36 }),
+    );
+    expect(conImpulso.balanceFinal).toBeCloseTo(20_890.91, 2);
+    expect(conImpulso.balanceFinal).toBeCloseTo(todoRegimen500.balanceFinal, 2);
+  });
+
+  it("borde 4: X=0 permitido — 24 m sin aporte, luego régimen 100 (P=0, 36 m)", () => {
+    const conCero = calcular(
+      escenario({
+        capitalInicial: 0,
+        aporteRegimen: 100,
+        duracionMeses: 36,
+        impulso: { anios: 2, aporteMensual: 0 },
+      }),
+    );
+    // Meses 1–24 no aportan nada; solo los 12 últimos aportan 100/mes.
+    const soloRegimenUltimoAnio = calcular(
+      escenario({ capitalInicial: 0, aporteRegimen: 100, duracionMeses: 12 }),
+    );
+    expect(conCero.balanceFinal).toBeCloseTo(soloRegimenUltimoAnio.balanceFinal, 2);
+  });
+});
+
+describe("protección final — glide path gradual (docs/02 §5)", () => {
+  it("G1 canónico protegido: E1 + protección N=5 → 5 % → 869 040,78 (convive con impulso, borde 5)", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 10_000,
+        aporteRegimen: 420,
+        duracionMeses: 300,
+        impulso: { anios: 5, aporteMensual: 1_000 },
+        proteccion: { anios: 5, tasaReducida: 5 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(869_040.78, 2);
+  });
+
+  it("G3 escalera corta: P=10 000; 100; 120 m; 10 %→4 %, N=2 → 43 579,79", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 10_000,
+        aporteRegimen: 100,
+        duracionMeses: 120,
+        proteccion: { anios: 2, tasaReducida: 4 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(43_579.79, 2);
+  });
+
+  it("G4 clampeo: P=10 000; 100; 36 m; 10 %→5 %, N=5→3 bloques (8,33/6,67/5 %) → 16 136,34", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 10_000,
+        aporteRegimen: 100,
+        duracionMeses: 36,
+        proteccion: { anios: 5, tasaReducida: 5 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(16_136.34, 2);
+  });
+
+  it("G5 duración no múltiplo: P=0; 100; 30 m; 10 %→5 %, N=2 → 3 227,53", () => {
+    const r = calcular(
+      escenario({
+        capitalInicial: 0,
+        aporteRegimen: 100,
+        duracionMeses: 30,
+        proteccion: { anios: 2, tasaReducida: 5 },
+      }),
+    );
+    expect(r.balanceFinal).toBeCloseTo(3_227.53, 2);
   });
 });
 
