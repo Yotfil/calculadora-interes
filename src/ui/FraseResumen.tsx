@@ -1,11 +1,10 @@
-import { Fragment } from "react";
-import type { ReactNode } from "react";
-
 import type { Resultado } from "../core";
 import type { Diccionario } from "../i18n/diccionario";
 import { formatMoney } from "../i18n/formatMoney";
 import { type Locale, localeIntl } from "../i18n/locale";
 import { t } from "../i18n/t";
+
+import { conNegritas } from "./negritas";
 
 interface Props {
   resultado: Resultado;
@@ -14,20 +13,6 @@ interface Props {
   duracionUnidad: "a" | "m";
   locale: Locale;
   dict: Diccionario;
-}
-
-// Renderiza `**negrita**` (markdown mínimo de docs/07): `t` deja el texto verbatim,
-// aquí se envuelven los tramos impares en <strong>.
-function conNegritas(texto: string): ReactNode[] {
-  return texto
-    .split("**")
-    .map((seg, i) =>
-      i % 2 === 1 ? (
-        <strong key={i}>{seg}</strong>
-      ) : (
-        <Fragment key={i}>{seg}</Fragment>
-      ),
-    );
 }
 
 // Frase resumen bajo la cifra (docs/04 §4). En Básica solo la variante `normal`
