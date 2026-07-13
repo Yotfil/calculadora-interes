@@ -32,7 +32,8 @@
     },
     "aporteRegimen": {
       "label": "Aporte mensual",
-      "ayuda": "Lo que agregas cada mes. Se abona al final de cada mes."
+      "ayuda": "Lo que agregas cada mes. Se abona al final de cada mes.",
+      "ayudaImpulso": "Lo que agregas cada mes, tras [[{periodo}]] de impulso. Se abona al final de cada mes."
     },
     "duracion": {
       "label": "Tiempo de inversión",
@@ -65,7 +66,12 @@
       },
       "aporte": {
         "label": "Aporte mensual durante el impulso",
-        "ayuda": "Reemplaza al aporte mensual solo durante esos años."
+        "ayuda": "Reemplaza al [[{aporte}]] solo durante esos años.",
+        "ayudaImpulso": "Reemplaza al [[{aporte}]] durante [[{periodo}]]."
+      },
+      "periodo": {
+        "singular": "el primer año",
+        "plural": "los primeros {anios} años"
       }
     },
     "proteccion": {

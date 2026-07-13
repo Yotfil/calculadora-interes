@@ -32,7 +32,8 @@
     },
     "aporteRegimen": {
       "label": "Monthly contribution",
-      "ayuda": "What you add each month. It's credited at the end of each month."
+      "ayuda": "What you add each month. It's credited at the end of each month.",
+      "ayudaImpulso": "What you add each month, after [[{periodo}]] of boost. Credited at the end of each month."
     },
     "duracion": {
       "label": "Investment horizon",
@@ -65,7 +66,12 @@
       },
       "aporte": {
         "label": "Monthly contribution during the boost",
-        "ayuda": "Replaces the monthly contribution only during those years."
+        "ayuda": "Replaces the [[{aporte}]] only during those years.",
+        "ayudaImpulso": "Replaces the [[{aporte}]] during [[{periodo}]]."
+      },
+      "periodo": {
+        "singular": "the first year",
+        "plural": "the first {anios} years"
       }
     },
     "proteccion": {

@@ -303,6 +303,41 @@ export default function Calculadora({ locale, dict }: Props) {
     return undefined;
   })();
 
+  // Vínculo Impulso ↔ Aporte mensual (docs/07 §3): cuando el impulso APLICA de
+  // verdad (ambos campos + no clampeado), las ayudas de los dos campos de aporte
+  // nombran los años reales del impulso (fragmento `periodo`, con pluralización).
+  // Si solo están los años, el impulso aún no aplica (lo dice `avisoImpulso`).
+  // Gateado también a `impulsoAbierto`: las señales del vínculo (label teñido y
+  // copy dinámico) aparecen/desaparecen JUNTAS, solo con la sección visible; si
+  // no, el copy del Aporte mensual (que vive fuera del colapsable) quedaría
+  // hablando de "los primeros N años" sin el impulso a la vista con qué correferir.
+  const impulsoActivo = ((): { periodo: string } | null => {
+    if (tab === "basica" || !impulsoAbierto) return null;
+    const parsed = esquemaFormulario.safeParse(valores);
+    if (!parsed.success) return null;
+    const esc = aEscenario(parsed.data, tab);
+    if (!esc.impulso || esc.impulso.anios * 12 >= esc.duracionMeses) return null;
+    const n = esc.impulso.anios;
+    const periodo =
+      n === 1
+        ? t(dict, "campos.impulso.periodo.singular")
+        : t(dict, "campos.impulso.periodo.plural", { anios: n });
+    return { periodo };
+  })();
+
+  // Ayudas dinámicas de los dos campos de aporte. `{aporte}` = el label de
+  // Aporte mensual (fuente única del texto, no se duplica el literal).
+  const labelAporte = t(dict, "campos.aporteRegimen.label");
+  const ayudaAporteRegimen = impulsoActivo
+    ? t(dict, "campos.aporteRegimen.ayudaImpulso", { periodo: impulsoActivo.periodo })
+    : t(dict, "campos.aporteRegimen.ayuda");
+  const ayudaAporteImpulso = impulsoActivo
+    ? t(dict, "campos.impulso.aporte.ayudaImpulso", {
+        aporte: labelAporte,
+        periodo: impulsoActivo.periodo,
+      })
+    : t(dict, "campos.impulso.aporte.ayuda", { aporte: labelAporte });
+
   // Aviso suave de la sección Protección (docs/07 §3, nunca es un error), espejo
   // del de Impulso. Solo en Experto (docs/04 §2):
   // - incompleta: un solo campo lleno (XOR); la sección no se aplica.
@@ -379,14 +414,15 @@ export default function Calculadora({ locale, dict }: Props) {
               </h2>
               <Campo
                 campo="aporteRegimen"
-                label={t(dict, "campos.aporteRegimen.label")}
-                ayuda={t(dict, "campos.aporteRegimen.ayuda")}
+                label={labelAporte}
+                ayuda={ayudaAporteRegimen}
                 valor={valores.aporteRegimen}
                 error={mensaje("aporteRegimen")}
                 agrupaMiles
                 locale={locale}
                 moneda={t(dict, "moneda.codigo")}
                 monedaTooltip={t(dict, "moneda.tooltip")}
+                resaltarLabel={tab !== "basica" && impulsoAbierto}
                 onCambio={(v) => cambiar("aporteRegimen", v)}
                 onBlur={() => validarCampo("aporteRegimen")}
               />
@@ -416,7 +452,7 @@ export default function Calculadora({ locale, dict }: Props) {
                   <Campo
                     campo="aporteImpulso"
                     label={t(dict, "campos.impulso.aporte.label")}
-                    ayuda={t(dict, "campos.impulso.aporte.ayuda")}
+                    ayuda={ayudaAporteImpulso}
                     valor={valores.aporteImpulso}
                     error={mensaje("aporteImpulso")}
                     agrupaMiles
