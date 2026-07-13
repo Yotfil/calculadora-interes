@@ -4,17 +4,18 @@
 
 ## Próximo paso
 
-Sigue la **Fase 2** con el **Módulo 11 (Métricas derivadas)** [TDD]: leer
-`docs/06` §1 + `docs/ESTADO.md`. Tres métricas sobre resultados ya calculados
-(no tocan el bucle): **ahorro del escalonado** (impulso vs. régimen constante),
-**costo de la protección** (base − glide; es el caso **G2 = E1 − G1 = 137 928,15**
-de `docs/02` §5, diferido aquí a M11) y **banda de varianza** (`docs/02` §8,
-`Escenario.varianza` ya declarada). Decidir con Jef dónde viven: métrica pura en
-`core` que compara dos `Resultado`/dos corridas, o helper de presentación. TDD
-directo con las anclas de `docs/06` §1 (ej. ahorro ≈ 39 616,90). **M10 cerrado:**
-el hook `tasa(t)` (`construirTasa` junto a `calcular`) arma la escalera del glide;
-bucle intacto (decisión M2). Trampa confirmada y viva: bloques contados DESDE EL
-FINAL y reducida convertida UNA sola vez (misma convención §1). **Estado del deploy (M8):** dominio real `https://helenguevara.com` fijado en
+Sigue la **Fase 2** con el **Módulo 12 (UI tab Avanzada)**: leer `docs/04` §1–3
++ `docs/05` + `docs/ESTADO.md`. Añadir la sección "Impulso inicial" (campos
+`aniosImpulso` + `aporteImpulso`, ya en esquema/tipos) al tab Avanzada y mostrar
+la **métrica de ahorro** (`ahorroEscalonado(e)`, ya en `core`, K2 = 39 616,90 en
+E1; devuelve `null` sin impulso → no renderizar). También destrabar el ejemplo
+precargado E1/F2 diferido de M6 (`vacio.cta`, "Ver un ejemplo": E1 usa impulso,
+inexistente hasta ahora). Cablear el evento GA4 `calcular` con `con_impulso`
+real (hoy `false` fijo, decisión M7). **M11 cerrado:** las 3 métricas de
+`docs/06` §1 viven en `src/core/metricas.ts` como funciones puras que re-corren
+`calcular` con escenarios modificados (`calcular` intacto; la UI ensambla `banda`
+sobre `Resultado`); devuelven `null` sin la sección. G2 (costo de la protección)
+resuelto aquí. **Estado del deploy (M8):** dominio real `https://helenguevara.com` fijado en
 config/robots/e2e; `netlify.toml` versionado (`astro build`→`dist`, Node 22);
 release 1.0.0 cortado (bump only en `release/1.0.0`). **Trabajo humano pendiente
 de Jef** (no bloquea a Claude): mergear los 3 PRs en orden (feature→dev,
@@ -54,8 +55,9 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 - [x] **M10 · Motor glide path gradual** [TDD] (`docs/02` §5): hook `tasa(t)` en
       `construirTasa(e)`; `N' = min(N, ceil(dur/12))`, bloques desde el final;
       bucle intacto. G1/G3/G4/G5 verdes (G2 → M11).
-- [ ] **M11 · Métricas derivadas** [TDD]: ahorro del escalonado, costo de la
-      protección, banda de varianza (`docs/06` §1).
+- [x] **M11 · Métricas derivadas** [TDD] (`docs/06` §1): `ahorroEscalonado`,
+      `costoProteccion`, `bandaVarianza` en `src/core/metricas.ts`; funciones
+      puras que re-corren `calcular`; `null` sin la sección. K1–K5/G2/V1 verdes.
 - [ ] **M12 · UI tab Avanzada**: sección "Impulso inicial" + métrica de ahorro.
 - [ ] **M13 · UI tab Experto**: "Protección final" + varianza + costo de la
       protección. Release 1.1.0.
@@ -253,6 +255,31 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
   pública, decisión M2); la escalera se fija por balance final, que ya discrimina
   la trampa "desde el final" (G5 = 3 227,53 solo sale contando desde el final).
 
+- **M11 · Las 3 métricas viven en `core` como funciones puras, `calcular`
+  intacto** (confirmado con Jef): `ahorroEscalonado`/`costoProteccion`/
+  `bandaVarianza` en `src/core/metricas.ts`, exportadas del barrel. Re-corren
+  `calcular` con escenarios modificados (patrón "compara dos corridas"); no tocan
+  el bucle. `calcular` NO llena `Resultado.banda` (una sola responsabilidad): la
+  UI la ensambla con `bandaVarianza(e)`. El tipo `Banda` se extrajo de `Resultado`
+  a un tipo nombrado y exportable.
+- **M11 · Guarda `null` cuando falta la sección** (confirmado con Jef): ahorro sin
+  `impulso` → `null`; costo sin `proteccion` → `null`; banda sin `varianza` o
+  `v ≤ 0` → `null`. La UI decide si renderizar. `number | null` / `Banda | null`.
+- **M11 · Ahorro = fijo equivalente por linealidad**: como el balance es lineal en
+  los aportes bajo senda de tasa fija, `F = (balanceEscalonado − FV(solo capital))
+  / FV(aporte 1/mes)` con AMBOS FV corridos SIN impulso (misma senda), y
+  `ahorro = F·M − Σaportes`, `M = duracionMeses`, `Σaportes = totalAportado −
+  capitalInicial`. K1 F=668,06 / K2 ahorro=39 616,90.
+- **M11 · La varianza desplaza SOLO la principal**: basta correr `calcular` con
+  `tasaNominalAnual ∓v/±v` porque `construirTasa` deriva los bloques del glide de
+  la principal sin tocar `tasaReducida` (docs/02 §8: la varianza modela
+  incertidumbre, no la decisión de protección). Nominal recortado a [0,100]
+  (docs/02 §6): 0,5 %−1 → 0 %; 99,5 %+1 → 100 %. Un test con glide fija que la
+  reducida queda intacta (si la contaminara, el superior cambiaría).
+- **M11 · G2 (costo de la protección) resuelto aquí**, no en M10: es métrica
+  derivada (compara dos `Resultado`), no motor. `costoProteccion(G1) = 137 928,15
+  = E1 − G1`.
+
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
   `root` en esta máquina y algunos installs fallan con EACCES/EEXIST.
   Arreglo permanente: `sudo chown -R $(whoami) ~/.npm`. Workaround usado en
@@ -328,6 +355,24 @@ humanos previos a publicar (README): revisar en_US y las 5 respuestas de FAQ.
 
 ## Historial de sesiones
 
+- **2026-07-12 · Sesión 11 — M11 Métricas derivadas** ✅. Rama
+  `feature/modulo-11-metricas-derivadas` (2 commits granulares sobre `dev`: extraer
+  tipo `Banda` + feat de métricas). TDD directo (tablas cerradas `docs/06` §1, sin
+  Plan Mode). Decisión con Jef: las 3 métricas viven en `src/core/metricas.ts` como
+  funciones puras que re-corren `calcular` con escenarios modificados, `calcular`
+  INTACTO (una sola responsabilidad; la UI ensambla `banda` sobre `Resultado`);
+  devuelven `null` sin la sección requerida. Anclas fijadas corriendo la
+  implementación de referencia (`calcular`, ya validada por N1–G5): `ahorroEscalonado`
+  K1 F=668,06 / K2 39 616,90; `costoProteccion` K3/G2 137 928,15 (E1−G1, diferido de
+  M10); `bandaVarianza` V1 [564 955,36 ; 816 454,87]. Tests primero, rojo verificado
+  (módulo inexistente), luego implementación. 165 unit verdes (+14: K1–K5, G2, V1,
+  clips [0,100] inferior y superior, guardas null, glide-no-contamina-reducida),
+  lint verde. Revisión de diff con subagente fresco contra `docs/06` §1 y `docs/02`
+  §3–8: reimplementó el motor en Python y reprodujo las 11 anclas al centavo; sin
+  bloqueantes. Su único accionable (falta el test del recorte SUPERIOR a 100, solo
+  estaba el inferior a 0) se aplicó (`tasa 99,5 % + v=1 → 100 %`); su NIT (comentario
+  de `recortar` documentaba solo el borde inferior) también. `main` sigue sin avanzar
+  (el release 1.1.0 es tras M13).
 - **2026-07-12 · Sesión 10 — M10 Motor glide path gradual (protección final)** ✅.
   Rama `feature/modulo-10-motor-glide` (1 commit sobre `dev`). TDD directo (tabla
   cerrada §5, sin Plan Mode): tests G1/G3/G4/G5 primero, rojo verificado (los 4
