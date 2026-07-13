@@ -152,6 +152,28 @@ describe("impulso inicial — aportes escalonados (docs/02 §4)", () => {
     );
     expect(conCero.balanceFinal).toBeCloseTo(soloRegimenUltimoAnio.balanceFinal, 2);
   });
+
+  it("el impulso REEMPLAZA el régimen, no lo suma (docs/02 §4, copy docs/07 §3)", () => {
+    // Régimen 300, impulso 1 000 durante 3 años, 10 años totales. Durante el
+    // impulso el aporte mensual es 1 000 (reemplazo), no 1 300 (suma); pasados
+    // los 3 años vuelve a 300. Se afirma sobre `filas[i].aportado` por ser
+    // observable directo del aporte mensual efectivo (×12 en años completos).
+    const r = calcular(
+      escenario({
+        capitalInicial: 0,
+        aporteRegimen: 300,
+        duracionMeses: 120,
+        impulso: { anios: 3, aporteMensual: 1_000 },
+      }),
+    );
+    // Años 1–3: 12 × 1 000 = 12 000 (reemplazo). La suma daría 12 × 1 300 = 15 600.
+    expect(r.filas[0].aportado).toBe(12_000);
+    expect(r.filas[1].aportado).toBe(12_000);
+    expect(r.filas[2].aportado).toBe(12_000);
+    // Año 4 en adelante: régimen puro, 12 × 300 = 3 600.
+    expect(r.filas[3].aportado).toBe(3_600);
+    expect(r.filas[9].aportado).toBe(3_600);
+  });
 });
 
 describe("protección final — glide path gradual (docs/02 §5)", () => {
