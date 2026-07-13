@@ -4,15 +4,15 @@
 
 ## Próximo paso
 
-**Release 1.1.0 cortado** (PR #22 `release/1.1.0 → dev` con solo el bump + PR #23
-`dev → main`; `main` en **v1.1.0**, footer del build verificado). La **Fase 2 está
-completa** (Avanzada + Experto). `main` avanzó por segunda vez con este release.
-
-Tras el release, Jef abrió un tramo de **incidencias y mejoras de UI** fuera de
-la checklist: `feature/incidencias-ui-usd-miles` y, encima de ella,
-`feature/vinculo-impulso-aporte` (vínculo por color Impulso↔Aporte). Ambas van a
-`dev` por PR; la segunda **se mergea después** de la primera (stack). Ver
-historial 2026-07-13.
+**Release 1.1.1 cortado** (patch): tramo de **incidencias y mejoras de UI** fuera
+de la checklist, ya en `dev` (PR #25 test de reemplazo, PR #27 incidencias que
+absorbió el vínculo vía PR #26) → rama `release/1.1.1` desde `dev` con ÚNICAMENTE
+el bump (`npm version patch` → 1.1.1; se eligió patch, no minor, para dejar el
+**1.2.0 reservado al cierre de la Fase 3 / M18**) → PR `release/1.1.1 → dev` + PR
+`dev → main`. Footer del build muestra **v1.1.1** (es y en, verificado). `main`
+avanza por tercera vez. Contenido del release: tooltips de gráficos legibles en
+oscuro, separador de miles en inputs, moneda USD visible (nota+badge+adorno),
+fix de raíz del flake e2e (hidratación) y el vínculo por color Impulso↔Aporte.
 
 Sigue la **Fase 3** con **M14 · motor modo meta** [TDD]: leer `docs/ESTADO.md` +
 `docs/03` §1. Tabla de casos cerrada → TDD directo (tests primero, verlos fallar,
@@ -471,6 +471,16 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
 
 ## Historial de sesiones
 
+- **2026-07-13 · Release 1.1.1 (patch)** ✅. Corte del tramo de incidencias +
+  mejoras de UI (ver dos entradas siguientes). Merges del día: PR #25 (test de
+  reemplazo → dev), PR #26 (vínculo → rama de incidencias, stack), PR #27
+  (incidencias+vínculo → dev). Ramas sincronizadas. Rama `release/1.1.1` desde
+  `dev` con SOLO el bump (`npm version patch` → 1.1.1; **patch** por decisión de
+  Jef, para reservar 1.2.0 al cierre de Fase 3/M18). `dev` verde antes del corte
+  (lint, 184 unit, build). Footer del build en **v1.1.1** (es+en) verificado.
+  Entregados PRs `release/1.1.1 → dev` y `dev → main`; **Claude no mergea**.
+  Netlify auto-despliega al avanzar `main` (config `netlify.toml`); conectar el
+  sitio + DNS sigue siendo gate humano de Jef si no se hizo en releases previos.
 - **2026-07-13 · Extra (post-1.1.0) — Vínculo Impulso ↔ Aporte mensual** ✅. Rama
   `feature/vinculo-impulso-aporte` (5 commits granulares, STACK sobre
   `feature/incidencias-ui-usd-miles` porque comparten `Campo.tsx` y el copy del
