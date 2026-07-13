@@ -4,27 +4,25 @@
 
 ## Próximo paso
 
-Sigue la **Fase 2** con el **Módulo 13 (UI tab Experto)**, que la cierra y corta
-el **release 1.1.0**: leer `docs/04` §1–4 + `docs/05` + `docs/06` §1. Añadir al
-tab Experto las secciones colapsadas "Protección final" (`aniosProteccion` +
-`tasaReducida`, ya en esquema/tipos, en el Paso 4) y "Varianza" (`varianza`), y
-mostrar en resultados el **costo de la protección** (`costoProteccion(e)`, ya en
-`core`; G2 = 137 928,15) y la **banda de varianza** (`bandaVarianza(e)`; V1 =
-[564 955,36 ; 816 454,87]) — ambas devuelven `null` sin su sección. **El impulso
-YA vive en Experto** (M12 lo renderiza cuando `tab !== "basica"`) y **`aEscenario`
-YA gatea protección/varianza a Experto** (hecho en M12): M13 solo agrega su UI +
-el render de métricas. `con_proteccion` de GA4 se activa solo cuando la sección
-entra al motor (el cableado ya lee `escenario.proteccion !== undefined`).
-Reutilizar `SeccionColapsable` (M12) para las secciones nuevas y `conNegritas`
-(`src/ui/negritas.tsx`) para el copy con negrita. **Patrón de la métrica (M12,
-replicar):** el core es dueño del número; la UI lo formatea con `formatMoney` y
-cita el copy textual de `docs/07` §4 (`metricas.costoProteccion` con `{n}`/`{costo}`;
-`metricas.banda` con `{tasa}`/`{v}`/`{inferior}`/`{superior}`).
+**M13 cerrado: la Fase 2 está completa.** Sigue el **release 1.1.0** (CLAUDE.md
+§6, precondición: PR de M13 `feature/modulo-13-ui-experto → dev` mergeado): rama
+`release/1.1.0` desde `dev` actualizado con ÚNICAMENTE el bump
+(`npm version minor --no-git-tag-version` → 1.1.0; minor = features de Fase 2),
+mergeada a `dev`; el release en sí es el merge `dev → main` (el footer del build
+debe mostrar `v1.1.0`). **Claude nunca mergea:** se entregan los links de PR
+(feature→dev ya entregado; luego release→dev y dev→main). Tras el release arranca
+la **Fase 3** con **M14 (motor modo meta)** [TDD], leer `docs/03` §1.
 
-**Deuda observada (NO de M12): la cifra grande muestra centavos**
+**Deuda observada (NO de M13, heredada de M6): la cifra grande muestra centavos**
 (`1.006.968,93 US$`), no dólar entero half-up como pide `docs/02` §7. Es herencia
 de M6 (`CifraGrande` usa `formatMoney` con 2 decimales; F1/F2 e2e afianzan centavos).
-Decidir con Jef si se corrige (tocaría F1/F2/CifraGrande, fuera del alcance de M12).
+Decidir con Jef si se corrige (tocaría F1/F2/CifraGrande, fuera del alcance de M13).
+
+**NIT cosmético de M13 (documentado, no aplicado):** la sección "Varianza" es un
+campo único (docs/07 §3 no le da `.titulo`, a diferencia de impulso/protección),
+así que reusa `campos.varianza.label` como título del colapsable Y como label del
+campo → el texto "Varianza de la tasa (opcional)" aparece dos veces. Arreglarlo
+exigiría una clave de copy nueva (decisión de Jef); se deja como está.
 
 **Gates humanos pendientes de Jef** (no bloquean a Claude): revisar en_US y las 5
 respuestas FAQ antes de publicar; GA4 diferido (`PUBLIC_GA4_ID` vacío → analítica
@@ -69,8 +67,10 @@ release 1.1.0 (merge dev→main) se corta tras M13.
 - [x] **M12 · UI tab Avanzada**: sección "Impulso inicial" colapsable (Avanzada
       y Experto) + métrica de ahorro (`fijoEquivalente`/`ahorroEscalonado`) +
       "Ver un ejemplo" (E1) + `aEscenario` consciente del tab + GA4 real.
-- [ ] **M13 · UI tab Experto**: "Protección final" + varianza + costo de la
-      protección. Release 1.1.0.
+- [x] **M13 · UI tab Experto**: secciones colapsables "Protección final"
+      (`aniosProteccion` + `tasaReducida`) y "Varianza" (`varianza`) en el Paso 4
+      (solo Experto) + render de "costo de la protección" (G2) y "banda de
+      varianza" (V1) en resultados + GA4 `con_proteccion` real. Cierra la Fase 2.
 
 ### Fase 3 — Meta, inflación y compartir (release 1.2.0)
 
@@ -321,6 +321,27 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
   comparten el botón Calcular y "Ver un ejemplo" (`cargarEjemplo`, E1: sube
   Básica→Avanzada para que el impulso aplique; en Experto se queda).
 
+- **M13 · Puro UI, patrón de Impulso replicado**: las dos secciones colapsables
+  del Paso 4 (`SeccionColapsable id="seccion-proteccion"`/`"seccion-varianza"`,
+  solo `tab === "experto"`) y sus avisos espejan a Impulso. `avisoProteccion`:
+  `seccion.incompleta` (XOR de `aniosProteccion`/`tasaReducida`),
+  `seccion.clampeada.proteccion` (`anios*12 ≥ duracionMeses`). Varianza es campo
+  único: sin aviso. El core (métricas), el esquema (3 campos) y `aEscenario`
+  (gateo a Experto) ya existían; M13 no los tocó.
+- **M13 · `EJEMPLO_E1` debe llevar TODAS las claves** (`aniosProteccion`/
+  `tasaReducida`/`varianza` en `""`): `setValores` reemplaza el objeto entero y
+  la UI de Experto lee `valores.aniosProteccion.trim()` en `avisoProteccion`. Sin
+  las claves vacías, "Ver un ejemplo" en Experto crasheaba el render (undefined.trim).
+  Mismo cuidado con cualquier preset futuro (URL de M18).
+- **M13 · `{tasa}`/`{v}` de la banda son porcentaje, no dinero**: se formatean con
+  `Intl.NumberFormat(localeIntl(locale))` (mismo patrón que `{mult}` de
+  `FraseResumen`), nunca con `formatMoney` (que lleva `US$`). `costo` e
+  `inferior`/`superior` sí van por `formatMoney`. Se pasan a `Resultado` los
+  escalares `aniosProteccion` (`{n}`), `tasa`, `varianza` además de `costo`/`banda`.
+- **M13 · GA4 `con_proteccion` ya es real** sin cambios de cableado: `pintar` leía
+  `escenario.proteccion !== undefined` desde M12; hacer los campos tecleables lo
+  activó. Cerró la deuda de M7/M12.
+
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
   `root` en esta máquina y algunos installs fallan con EACCES/EEXIST.
   Arreglo permanente: `sudo chown -R $(whoami) ~/.npm`. Workaround usado en
@@ -400,6 +421,35 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
 
 ## Historial de sesiones
 
+- **2026-07-12 · Sesión 13 — M13 UI tab Experto** ✅. Rama
+  `feature/modulo-13-ui-experto` (3 commits granulares sobre `dev`). Tarea
+  estructural multi-archivo (Plan Mode + confirmación de alcance con Jef).
+  **Hallazgo confirmado en la apertura: M13 es puro UI** — core (métricas M11),
+  esquema (3 campos M3), `aEscenario` (gateo a Experto M12) e i18n ya listos y
+  verdes; solo faltaban los campos/secciones del formulario y el render de las
+  métricas. Commits: (1) secciones colapsables "Protección final" + "Varianza" en
+  el Paso 4 (solo Experto), avisos incompleta/clampeada, orden de foco + auto-apertura
+  al error, `EJEMPLO_E1` con las 3 claves vacías (bug de crash descubierto por el
+  e2e: `undefined.trim()` en `avisoProteccion` al "Ver un ejemplo" en Experto;
+  plegado al commit 1 vía `--fixup` + autosquash); (2) render de "costo de la
+  protección" y "banda de varianza" en `Resultado` (`pintar` deriva `costoProteccion`/
+  `bandaVarianza` del mismo escenario; `{tasa}`/`{v}` como porcentaje vía Intl, no
+  `formatMoney`) + GA4 `con_proteccion` real; (3) e2e `experto.spec.ts`. 169 unit
+  (sin cambios: el core ya cubría G2/V1) + 43 e2e (+4: costo G2=137 928,15, banda
+  V1=[564 955,36 ; 816 454,87], Básica ignora la protección + persistencia, avisos
+  incompleta/clampeada), lint + build verdes. **Trampa e2e:** con `tab-experto` +
+  `ver-ejemplo` seguidos, `cargarEjemplo` puede leer el `tab` previo (commit de
+  React aún no propagado) y saltar a Avanzada → se espera `aria-selected="true"`
+  de Experto antes de "Ver un ejemplo". Verificación visual claro/oscuro con
+  screenshots (dos secciones expandidas + tres cajas de métrica, contraste AA).
+  Revisión de diff con subagente fresco contra docs/04 §1–4/§6, 05, 06 §1–2 y 07
+  §3–4: sin bloqueantes ni accionables; verificó copy canónico, tokens semánticos,
+  moneda vía `formatMoney`, gateo de métricas a Experto y GA4. Su único NIT (texto
+  de "Varianza" duplicado por ser campo único sin `.titulo`) es coherente con la
+  spec → documentado, no aplicado (exigiría clave de copy nueva, decisión de Jef).
+  **Trampa flaky confirmada de nuevo:** F4 (M5) falla en la suite completa
+  (hidratación fantasma del preview), pasa aislado → no es de M13. `main` sigue sin
+  avanzar: el release 1.1.0 (dev→main) se corta tras mergear M13.
 - **2026-07-12 · Sesión 12 — M12 UI tab Avanzada** ✅. Rama
   `feature/modulo-12-ui-avanzada` (7 commits granulares sobre `dev`). Tarea
   estructural multi-archivo; confirmadas 2 decisiones con Jef antes de codear:

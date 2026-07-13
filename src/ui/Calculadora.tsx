@@ -4,10 +4,12 @@ import type { FormEvent } from "react";
 import { track } from "../analytics/track";
 import {
   ahorroEscalonado,
+  bandaVarianza,
   calcular as calcularMotor,
+  costoProteccion,
   fijoEquivalente,
 } from "../core";
-import type { Resultado as ResultadoMotor } from "../core";
+import type { Banda, Resultado as ResultadoMotor } from "../core";
 import type { Diccionario } from "../i18n/diccionario";
 import type { Locale } from "../i18n/locale";
 import { t } from "../i18n/t";
@@ -36,6 +38,13 @@ interface Salida {
   /** Métricas de Avanzada (docs/06 §1): null si no hay impulso aplicado. */
   ahorro: number | null;
   fijo: number | null;
+  /** Métricas de Experto (docs/06 §1): null sin protección / sin varianza. */
+  costo: number | null;
+  banda: Banda | null;
+  /** Escalares para el copy de las métricas de Experto (docs/07 §4). */
+  aniosProteccion: number | null;
+  tasa: number;
+  varianza: number | null;
   animar: boolean;
 }
 
@@ -65,6 +74,9 @@ const DEFAULTS: Record<string, string> = {
   // Secciones opcionales arrancan vacías (docs/02 §6): "" cuenta como ausente.
   aniosImpulso: "",
   aporteImpulso: "",
+  aniosProteccion: "",
+  tasaReducida: "",
+  varianza: "",
 };
 
 // E1 canónico (docs/02 §4): P=10 000, régimen 420, 300 m (=25 años), 10 % mensual,
@@ -79,6 +91,11 @@ const EJEMPLO_E1: Record<string, string> = {
   frecuencia: "12",
   aniosImpulso: "5",
   aporteImpulso: "1000",
+  // E1 no usa protección ni varianza: van vacías, pero la clave debe existir
+  // (setValores reemplaza el objeto entero y la UI de Experto las lee siempre).
+  aniosProteccion: "",
+  tasaReducida: "",
+  varianza: "",
 };
 
 // El evento GA4 `calcular` reporta el nivel con `tab` (b/a/e, docs/06 §2).
@@ -89,7 +106,8 @@ const TAB_EVENTO: Record<Tab, "b" | "a" | "e"> = {
 };
 
 // Orden de foco al primer error (docs/04 §3), en el orden visual de los pasos.
-// El impulso vive en el Paso 2 (docs/04 §1). Unidad y frecuencia no producen error.
+// El impulso vive en el Paso 2; protección y varianza en el Paso 4 (docs/04 §1).
+// Unidad y frecuencia no producen error.
 const ORDEN_CAMPOS = [
   "capitalInicial",
   "aporteRegimen",
@@ -97,9 +115,13 @@ const ORDEN_CAMPOS = [
   "aporteImpulso",
   "duracion",
   "tasaNominalAnual",
+  "aniosProteccion",
+  "tasaReducida",
+  "varianza",
 ] as const;
 
 const CAMPOS_IMPULSO = ["aniosImpulso", "aporteImpulso"];
+const CAMPOS_PROTECCION = ["aniosProteccion", "tasaReducida"];
 
 // Isla React del formulario Básica (docs/04 §1–3). M5: pasos 1–4 + validación inline.
 // El botón Calcular solo valida; el cálculo y el render de resultados llegan en M6.
@@ -111,8 +133,11 @@ export default function Calculadora({ locale, dict }: Props) {
   const [errores, setErrores] = useState<Record<string, string>>({});
   // null hasta el primer cálculo válido (estado vacío, docs/04 §4).
   const [salida, setSalida] = useState<Salida | null>(null);
-  // La sección Impulso (Avanzada/Experto) arranca colapsada (docs/04 §2.3).
+  // Las secciones opcionales arrancan colapsadas (docs/04 §2.3): impulso
+  // (Avanzada/Experto), protección y varianza (solo Experto).
   const [impulsoAbierto, setImpulsoAbierto] = useState(false);
+  const [proteccionAbierto, setProteccionAbierto] = useState(false);
+  const [varianzaAbierto, setVarianzaAbierto] = useState(false);
   const resultadoRef = useRef<HTMLDivElement>(null);
 
   // Al calcular, scroll al resultado (docs/04 §1, docs/05 §4.3): suave, o salto
@@ -189,10 +214,15 @@ export default function Calculadora({ locale, dict }: Props) {
       duracionUnidad: datos.duracionUnidad,
       ahorro: ahorroEscalonado(escenario),
       fijo: fijoEquivalente(escenario),
+      costo: costoProteccion(escenario),
+      banda: bandaVarianza(escenario),
+      aniosProteccion: escenario.proteccion?.anios ?? null,
+      tasa: escenario.tasaNominalAnual,
+      varianza: escenario.varianza ?? null,
       animar: !prefiereReducir(),
     });
     // Telemetría (docs/06 §2): `con_impulso`/`con_proteccion` reflejan lo que de
-    // verdad entró al motor según el tab (protección es UI de M13, hoy siempre off).
+    // verdad entró al motor según el tab (ambas secciones ya son tecleables).
     track("calcular", {
       tab: TAB_EVENTO[tabActivo] ?? "b",
       con_impulso: escenario.impulso !== undefined,
@@ -214,9 +244,11 @@ export default function Calculadora({ locale, dict }: Props) {
       setErrores(acc);
       const primero = ORDEN_CAMPOS.find((c) => acc[c]);
       if (primero) {
-        // Un error en el impulso solo es alcanzable con la sección abierta; si
-        // estuviera cerrada, la abrimos para que el campo enfocado sea visible.
+        // Un error de una sección opcional solo es alcanzable con ella abierta;
+        // si estuviera cerrada, la abrimos para que el campo enfocado sea visible.
         if (CAMPOS_IMPULSO.includes(primero)) setImpulsoAbierto(true);
+        if (CAMPOS_PROTECCION.includes(primero)) setProteccionAbierto(true);
+        if (primero === "varianza") setVarianzaAbierto(true);
         const el = document.getElementById(`campo-${primero}`);
         el?.scrollIntoView({ behavior: "smooth", block: "center" });
         el?.focus();
@@ -261,6 +293,26 @@ export default function Calculadora({ locale, dict }: Props) {
       const esc = aEscenario(parsed.data, tab);
       if (esc.impulso && esc.impulso.anios * 12 >= esc.duracionMeses) {
         return t(dict, "seccion.clampeada.impulso");
+      }
+    }
+    return undefined;
+  })();
+
+  // Aviso suave de la sección Protección (docs/07 §3, nunca es un error), espejo
+  // del de Impulso. Solo en Experto (docs/04 §2):
+  // - incompleta: un solo campo lleno (XOR); la sección no se aplica.
+  // - clampeada: ambos completos y la protección cubre todo el período (N*12 ≥ M).
+  // La varianza es campo único: no lleva aviso (ni XOR ni clampeo).
+  const avisoProteccion = ((): string | undefined => {
+    if (tab !== "experto") return undefined;
+    const conAnios = valores.aniosProteccion.trim() !== "";
+    const conTasa = valores.tasaReducida.trim() !== "";
+    if (conAnios !== conTasa) return t(dict, "seccion.incompleta");
+    const parsed = esquemaFormulario.safeParse(valores);
+    if (parsed.success) {
+      const esc = aEscenario(parsed.data, tab);
+      if (esc.proteccion && esc.proteccion.anios * 12 >= esc.duracionMeses) {
+        return t(dict, "seccion.clampeada.proteccion");
       }
     }
     return undefined;
@@ -409,6 +461,68 @@ export default function Calculadora({ locale, dict }: Props) {
                 valor={valores.frecuencia}
                 onCambio={(v) => cambiar("frecuencia", v)}
               />
+
+              {/* Protección final y Varianza (docs/04 §1): secciones colapsadas
+                  del Paso 4, solo en Experto. Su UI hace tecleables campos que ya
+                  viven en el esquema y que aEscenario gatea a Experto (M12). */}
+              {tab === "experto" && (
+                <>
+                  <SeccionColapsable
+                    id="seccion-proteccion"
+                    titulo={t(dict, "campos.proteccion.titulo")}
+                    abierto={proteccionAbierto}
+                    onToggle={() => setProteccionAbierto((abierto) => !abierto)}
+                  >
+                    <p className="text-sm text-texto-suave">
+                      {t(dict, "campos.proteccion.ayuda")}
+                    </p>
+                    <Campo
+                      campo="aniosProteccion"
+                      label={t(dict, "campos.proteccion.anios.label")}
+                      ayuda={t(dict, "campos.proteccion.anios.ayuda")}
+                      valor={valores.aniosProteccion}
+                      error={mensaje("aniosProteccion")}
+                      inputMode="numeric"
+                      onCambio={(v) => cambiar("aniosProteccion", v)}
+                      onBlur={() => validarCampo("aniosProteccion")}
+                    />
+                    <Campo
+                      campo="tasaReducida"
+                      label={t(dict, "campos.proteccion.tasa.label")}
+                      ayuda={t(dict, "campos.proteccion.tasa.ayuda")}
+                      valor={valores.tasaReducida}
+                      error={mensaje("tasaReducida")}
+                      onCambio={(v) => cambiar("tasaReducida", v)}
+                      onBlur={() => validarCampo("tasaReducida")}
+                    />
+                    {avisoProteccion && (
+                      <p
+                        data-testid="aviso-proteccion"
+                        className="text-sm text-texto-suave"
+                      >
+                        {avisoProteccion}
+                      </p>
+                    )}
+                  </SeccionColapsable>
+
+                  <SeccionColapsable
+                    id="seccion-varianza"
+                    titulo={t(dict, "campos.varianza.label")}
+                    abierto={varianzaAbierto}
+                    onToggle={() => setVarianzaAbierto((abierto) => !abierto)}
+                  >
+                    <Campo
+                      campo="varianza"
+                      label={t(dict, "campos.varianza.label")}
+                      ayuda={t(dict, "campos.varianza.ayuda")}
+                      valor={valores.varianza}
+                      error={mensaje("varianza")}
+                      onCambio={(v) => cambiar("varianza", v)}
+                      onBlur={() => validarCampo("varianza")}
+                    />
+                  </SeccionColapsable>
+                </>
+              )}
             </section>
 
             <button
@@ -435,6 +549,11 @@ export default function Calculadora({ locale, dict }: Props) {
             duracionUnidad={salida.duracionUnidad}
             ahorro={salida.ahorro}
             fijo={salida.fijo}
+            costo={salida.costo}
+            banda={salida.banda}
+            aniosProteccion={salida.aniosProteccion}
+            tasa={salida.tasa}
+            varianza={salida.varianza}
             locale={locale}
             dict={dict}
             animar={salida.animar}
