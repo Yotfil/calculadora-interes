@@ -14,6 +14,7 @@ import CampoFrecuencia from "./CampoFrecuencia";
 import EstadoVacio from "./EstadoVacio";
 import Resultado from "./Resultado";
 import Tabs from "./Tabs";
+import type { Tab } from "./tab";
 import { aEscenario } from "./esquema/a-escenario";
 import { esquemaFormulario } from "./esquema/formulario";
 import { mapearError } from "./esquema/mapear-error";
@@ -53,7 +54,7 @@ const DEFAULTS: Record<string, string> = {
 };
 
 // El evento GA4 `calcular` reporta el nivel con `tab` (b/a/e, docs/06 §2).
-const TAB_EVENTO: Record<string, "b" | "a" | "e"> = {
+const TAB_EVENTO: Record<Tab, "b" | "a" | "e"> = {
   basica: "b",
   avanzada: "a",
   experto: "e",
@@ -71,7 +72,7 @@ const ORDEN_CAMPOS = [
 // El botón Calcular solo valida; el cálculo y el render de resultados llegan en M6.
 export default function Calculadora({ locale, dict }: Props) {
   const [valores, setValores] = useState<Record<string, string>>(DEFAULTS);
-  const [tab, setTab] = useState("basica");
+  const [tab, setTab] = useState<Tab>("basica");
   // Clave de error del esquema por campo (`errores.<campo>.<sufijo>`), no el texto:
   // así el mensaje de `duracion` se recalcula con la unidad actual al renderizar.
   const [errores, setErrores] = useState<Record<string, string>>({});
@@ -163,7 +164,7 @@ export default function Calculadora({ locale, dict }: Props) {
     const datos = parsed.data;
     // El tab define qué entra al motor (docs/04 §2): en Básica solo pasos 1–4;
     // las secciones de Avanzada/Experto llegan en M12–M13.
-    const resultado = calcularMotor(aEscenario(datos));
+    const resultado = calcularMotor(aEscenario(datos, tab));
     setSalida({
       resultado,
       capitalInicial: datos.capitalInicial,
@@ -201,7 +202,7 @@ export default function Calculadora({ locale, dict }: Props) {
           activo={tab}
           etiqueta={t(dict, "tabs.aria")}
           idPanel="panel-formulario"
-          onCambio={setTab}
+          onCambio={(id) => setTab(id as Tab)}
         />
 
         <div

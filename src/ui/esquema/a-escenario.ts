@@ -1,5 +1,7 @@
 import type { Escenario } from "../../core";
 
+import type { Tab } from "../tab";
+
 import type { ValoresFormulario } from "./formulario";
 
 /**
@@ -8,8 +10,12 @@ import type { ValoresFormulario } from "./formulario";
  * opcionales solo existen con sus DOS campos presentes (0 sí es presente).
  * meta e inflacionAnual no viajan aquí: son entradas de despejarRegimen y
  * deflactar (docs/03), no de calcular.
+ *
+ * El `tab` define QUÉ entra al motor (docs/04 §2): los valores persisten entre
+ * tabs pero cada nivel solo aplica sus secciones. Impulso vive en Avanzada y
+ * Experto; protección y varianza solo en Experto (su UI llega en M13).
  */
-export function aEscenario(valores: ValoresFormulario): Escenario {
+export function aEscenario(valores: ValoresFormulario, tab: Tab): Escenario {
   const escenario: Escenario = {
     capitalInicial: valores.capitalInicial,
     aporteRegimen: valores.aporteRegimen,
@@ -19,21 +25,29 @@ export function aEscenario(valores: ValoresFormulario): Escenario {
     frecuencia: valores.frecuencia,
   };
 
-  if (valores.aniosImpulso !== undefined && valores.aporteImpulso !== undefined) {
+  if (
+    tab !== "basica" &&
+    valores.aniosImpulso !== undefined &&
+    valores.aporteImpulso !== undefined
+  ) {
     escenario.impulso = {
       anios: valores.aniosImpulso,
       aporteMensual: valores.aporteImpulso,
     };
   }
 
-  if (valores.aniosProteccion !== undefined && valores.tasaReducida !== undefined) {
+  if (
+    tab === "experto" &&
+    valores.aniosProteccion !== undefined &&
+    valores.tasaReducida !== undefined
+  ) {
     escenario.proteccion = {
       anios: valores.aniosProteccion,
       tasaReducida: valores.tasaReducida,
     };
   }
 
-  if (valores.varianza !== undefined) {
+  if (tab === "experto" && valores.varianza !== undefined) {
     escenario.varianza = valores.varianza;
   }
 
