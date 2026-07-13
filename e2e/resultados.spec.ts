@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { abrir } from "./util";
+
 // Zona de resultados de la Básica (docs/04 §6). M6 cubre F1 (cálculo básico) y
 // F9 (reduced-motion). F2 (ejemplo E1) se difiere a M12: E1 usa el impulso
 // escalonado de Avanzada, inexistente en la Básica de Fase 1.
@@ -10,7 +12,7 @@ const norm = (s: string | null) => (s ?? "").replace(/\u00A0/g, " ");
 
 test.describe("resultados Básica (M6)", () => {
   test("F1: defaults → Calcular muestra cifra, frase y tabla", async ({ page }) => {
-    await page.goto("/es/");
+    await abrir(page, "/es/");
 
     // Antes de calcular: estado vacío, sin resultado.
     await expect(page.getByTestId("estado-vacio")).toBeVisible();
@@ -45,7 +47,7 @@ test.describe("resultados Básica (M6)", () => {
     page,
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/es/");
+    await abrir(page, "/es/");
     await page.getByTestId("boton-calcular").click();
 
     // Sin animación, la cifra muestra el valor final directamente (no cuenta

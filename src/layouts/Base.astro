@@ -102,6 +102,13 @@ const buildInfo = [`v${__APP_VERSION__}`, __COMMIT_DATE__, __COMMIT_HASH__]
         {titulo}
       </a>
       <div class="flex items-center gap-4">
+        {/* La app calcula solo en USD (MVP); el tooltip anticipa más monedas. */}
+        <span
+          data-testid="badge-moneda"
+          title={t(dict, "moneda.tooltip")}
+          class="rounded-full border border-borde px-2 py-0.5 text-xs text-texto-suave"
+          >{t(dict, "moneda.codigo")}</span
+        >
         <button
           id="toggle-tema"
           data-testid="toggle-tema"

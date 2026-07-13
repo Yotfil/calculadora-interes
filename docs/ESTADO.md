@@ -4,14 +4,20 @@
 
 ## Próximo paso
 
-**M13 cerrado: la Fase 2 está completa.** Sigue el **release 1.1.0** (CLAUDE.md
-§6, precondición: PR de M13 `feature/modulo-13-ui-experto → dev` mergeado): rama
-`release/1.1.0` desde `dev` actualizado con ÚNICAMENTE el bump
-(`npm version minor --no-git-tag-version` → 1.1.0; minor = features de Fase 2),
-mergeada a `dev`; el release en sí es el merge `dev → main` (el footer del build
-debe mostrar `v1.1.0`). **Claude nunca mergea:** se entregan los links de PR
-(feature→dev ya entregado; luego release→dev y dev→main). Tras el release arranca
-la **Fase 3** con **M14 (motor modo meta)** [TDD], leer `docs/03` §1.
+**Release 1.1.0 cortado** (PR #22 `release/1.1.0 → dev` con solo el bump + PR #23
+`dev → main`; `main` en **v1.1.0**, footer del build verificado). La **Fase 2 está
+completa** (Avanzada + Experto). `main` avanzó por segunda vez con este release.
+
+Tras el release, Jef abrió un tramo de **incidencias y mejoras de UI** fuera de
+la checklist: `feature/incidencias-ui-usd-miles` y, encima de ella,
+`feature/vinculo-impulso-aporte` (vínculo por color Impulso↔Aporte). Ambas van a
+`dev` por PR; la segunda **se mergea después** de la primera (stack). Ver
+historial 2026-07-13.
+
+Sigue la **Fase 3** con **M14 · motor modo meta** [TDD]: leer `docs/ESTADO.md` +
+`docs/03` §1. Tabla de casos cerrada → TDD directo (tests primero, verlos fallar,
+implementar), sin Plan Mode (CLAUDE.md §3). `core` no importa nada externo; la
+métrica/despeje vive como función pura (patrón de M11).
 
 **Deuda observada (NO de M13, heredada de M6): la cifra grande muestra centavos**
 (`1.006.968,93 US$`), no dólar entero half-up como pide `docs/02` §7. Es herencia
@@ -342,6 +348,50 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
   `escenario.proteccion !== undefined` desde M12; hacer los campos tecleables lo
   activó. Cerró la deuda de M7/M12.
 
+- **Incidencias UI (2026-07-13) · Miles solo en presentación**: los inputs de
+  dinero (`capitalInicial`/`aporteRegimen`/`aporteImpulso`; `meta` lo hereda en
+  M16) muestran separador de miles del locale vía `src/ui/miles.ts`
+  (`agruparMiles`/`desagruparMiles` + preservación de cursor en `Campo`). El
+  estado del formulario y el esquema Zod siguen recibiendo el string CRUDO
+  canónico (dígitos + `.` decimal): la decisión de M5 no cambió. A diferencia de
+  `Intl` es-ES, se agrupa también el entero de 4 cifras (1000 → "1.000", pedido
+  de Jef).
+- **Incidencias UI (2026-07-13) · Moneda USD visible** (decisión de Jef: las 3
+  señales a la vez): claves nuevas `moneda.codigo|nota|tooltip` (docs/07 §2–3),
+  nota sobre el Paso 1, badge en el header y adorno tipo SELECT DESHABILITADO
+  junto a los inputs de dinero con tooltip custom en hover ("en el futuro podrás
+  elegir otras monedas", anticipa el selector real). `moneda.codigo` ("USD") es
+  idéntico en es/en a propósito: quedó EXENTO en el test de paridad (como los
+  endónimos `idioma.*`). El literal de FORMATEO sigue solo en `formatMoney`.
+- **Incidencias UI (2026-07-13) · Flake e2e resuelto de raíz**: la isla expone
+  `data-hidratada` en su primer efecto y el helper `abrir()` de `e2e/util.ts` lo
+  espera tras navegar. TODO spec que interactúe con la isla (fill/click) debe
+  usar `abrir`, no `page.goto` directo: una interacción pre-hidratación se
+  pierde (y con miles, un re-fill del MISMO texto ni siquiera dispara `input`).
+  Con esto la suite completa pasó 3 corridas consecutivas sin flakes.
+- **Incidencias UI (2026-07-13) · Tooltips de Recharts con tokens**: estilos
+  compartidos en `src/ui/tooltipEstilos.ts` (torta y barras); el default de
+  Recharts (blanco) era ilegible en oscuro. Cualquier gráfico futuro debe
+  reusar ese módulo.
+- **Vínculo Impulso↔Aporte (2026-07-13) · Color = variante de texto del token
+  aportes**: el `--sem-aportes` está tuneado como objeto gráfico (≥3) y NO llega
+  a 4.5 como texto; se añadió `--sem-aportes-texto` (ámbar-700 #b45309 claro,
+  4.54:1 ✓ / ámbar-300 oscuro). Jef propuso #ec9b52 pero da 2.03:1 sobre el
+  fondo claro → descartado para texto. Reusa el color que YA significa "aportes".
+- **Vínculo Impulso↔Aporte · Markup de realce `[[ ]]`**: `conRealce`
+  (`src/ui/realce.tsx`, espeja a `conNegritas`) envuelve tramos en un `<span>`
+  con la clase de acento. El copy de docs/07 usa `[[ ]]` para el color, `**` para
+  negrita (dos markups distintos, dos renderers). `Campo` pasa SIEMPRE la ayuda
+  por `conRealce` (no-op sin markup).
+- **Vínculo Impulso↔Aporte · Copy dinámico gateado a "impulso aplica"**: las
+  ayudas con N (`campos.*.ayudaImpulso`) solo se muestran cuando el impulso
+  aplica de verdad (ambos campos + `anios*12 < duracionMeses`, mismo criterio
+  que el aviso "clampeada" pero negado). Si solo están los años → copy base (lo
+  cubre el aviso "incompleta"). `periodo` pluraliza por `N===1`
+  (`campos.impulso.periodo.singular|plural`). `{aporte}` se interpola con el
+  label de `aporteRegimen` (fuente única del literal). El label de aporteRegimen
+  se tiñe con `resaltarLabel` = `tab !== "basica" && impulsoAbierto`.
+
 - El caché global de npm (`~/.npm/_cacache`) tiene archivos propiedad de
   `root` en esta máquina y algunos installs fallan con EACCES/EEXIST.
   Arreglo permanente: `sudo chown -R $(whoami) ~/.npm`. Workaround usado en
@@ -421,6 +471,62 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
 
 ## Historial de sesiones
 
+- **2026-07-13 · Extra (post-1.1.0) — Vínculo Impulso ↔ Aporte mensual** ✅. Rama
+  `feature/vinculo-impulso-aporte` (5 commits granulares, STACK sobre
+  `feature/incidencias-ui-usd-miles` porque comparten `Campo.tsx` y el copy del
+  impulso; se mergea DESPUÉS de esa). Plan Mode + 2 decisiones de Jef (color =
+  variante de texto del token `aportes`, NO su #ec9b52 que da 2.03:1; copy
+  dinámico solo cuando el impulso aplica de verdad). Problema: usuarios no captan
+  que el impulso REEMPLAZA el aporte (no suma). Solución: color compartido (label
+  de Aporte mensual + referencia en la ayuda del impulso se tiñen al expandir la
+  sección) y copy dinámico que nombra los años reales (N) con el fragmento
+  resaltado. Commits: (1) token `--sem-aportes-texto`; (2) `conRealce`
+  (`realce.tsx`) + test; (3) `Campo` pasa la ayuda por `conRealce` + prop
+  `resaltarLabel`; (4) copy (`ayudaImpulso`/`periodo` es+en) + cableado en
+  `Calculadora` + docs/07; (5) e2e. 183 unit (+3 `conRealce`) + 47 e2e (+1) verdes,
+  lint + build verdes. Verificación visual claro/oscuro/es/en (ámbar-700 legible
+  en claro, 4.54:1; singular "el primer año"/"the first year" en N=1). Revisión de
+  diff con subagente fresco (contraste verificado numéricamente; `src/core/`
+  intocado): sin bloqueantes. Su único accionable se aplicó (plegado por
+  `--fixup`): el copy dinámico del Aporte mensual (que vive FUERA del colapsable)
+  persistía al COLAPSAR la sección → se gateó `impulsoActivo` también a
+  `impulsoAbierto`, así las señales del vínculo aparecen/desaparecen juntas
+  (+e2e del caso colapsar-con-valores). Sus 2 NITs (unit test de `conRealce`
+  valida el mecanismo no el token — cubierto por e2e; markup desbalanceado
+  degrada sin romper, igual que `conNegritas`) no requieren acción. `main` no
+  avanza (esto va a dev; release 1.2.0 tras M18).
+- **2026-07-13 · Extra (post-1.1.0) — Incidencias y mejoras de UI** ✅. Rama
+  `feature/incidencias-ui-usd-miles` (4 commits granulares sobre `dev`). Trabajo
+  NO planeado fuera de la checklist (pedido de Jef antes de M14). Commits:
+  (1) tooltips de Recharts (torta+barras) con tokens vía `tooltipEstilos.ts`
+  compartido — el default blanco era ilegible en oscuro; (2) fix de raíz del
+  flake e2e: `data-hidratada` en la isla + helper `abrir()` (`e2e/util.ts`) que
+  los specs interactivos usan en vez de `goto` — 3 corridas completas seguidas
+  sin flakes (antes 1–2 fallos fantasma por corrida); (3) separador de miles en
+  inputs de dinero (`src/ui/miles.ts` + máscara en `Campo` con preservación de
+  cursor; crudo canónico intacto para el esquema, decisión de M5 sin cambios);
+  (4) moneda USD visible: nota sobre Paso 1 + badge header + adorno
+  select-deshabilitado con tooltip custom (claves `moneda.*`, docs/07
+  actualizado; exención de `moneda.codigo` en el parity-test). Plan Mode +
+  3 decisiones de Jef (las 3 señales de moneda a la vez; adorno como select
+  deshabilitado con tooltip "próximamente otras monedas"; agrupar también los
+  enteros de 4 cifras a diferencia de `Intl` es-ES). 180 unit (+11 de miles,
+  +exención parity) + 46 e2e (+3: moneda/adorno/tooltip en hover, valores
+  agrupados, "." tecleado). Verificación visual claro/oscuro con screenshots
+  (tooltips, badge, nota, adornos; estilos computados del tooltip en oscuro).
+  Revisión de diff con subagente fresco contra docs/02 §6, 05 §2 y 07 §2–3
+  (fuzz de 20 000 casos de ida-vuelta en `miles.ts` contra el `aNumero` real;
+  SSR de `useLayoutEffect` reproducido con React 18.3.1): sin bloqueantes; sus
+  3 accionables se verificaron y aplicaron plegados por `--fixup`+autosquash
+  — (a) "." TECLEADO en es se trataba como millar y corrompía el monto ×100 →
+  ahora separador tecleado = decimal del locale (e2e nuevo lo fija); (b) alias
+  isomórfico `useEfectoCaret` (el warning SSR de `useLayoutEffect` aparecía en
+  cada render de `Campo` en dev); (c) Supr sobre un separador dejaba el caret
+  "atascado" → salto de caret. Su NIT de estilos (radio 4px + sombra `shadow-md`
+  en el tooltip de Recharts) también se aplicó; sus NITs de a11y (aria-label
+  verboso del adorno; tooltip no alcanzable por teclado/táctil) quedan
+  documentados como mitigados por la `nota-moneda` visible. `main` no avanza
+  (esto va a dev; el release 1.2.0 es tras M18).
 - **2026-07-12 · Sesión 13 — M13 UI tab Experto** ✅. Rama
   `feature/modulo-13-ui-experto` (3 commits granulares sobre `dev`). Tarea
   estructural multi-archivo (Plan Mode + confirmación de alcance con Jef).
@@ -448,8 +554,10 @@ proteccion !== undefined` del MISMO escenario que entra al motor (no hardcode).
   de "Varianza" duplicado por ser campo único sin `.titulo`) es coherente con la
   spec → documentado, no aplicado (exigiría clave de copy nueva, decisión de Jef).
   **Trampa flaky confirmada de nuevo:** F4 (M5) falla en la suite completa
-  (hidratación fantasma del preview), pasa aislado → no es de M13. `main` sigue sin
-  avanzar: el release 1.1.0 (dev→main) se corta tras mergear M13.
+  (hidratación fantasma del preview), pasa aislado → no es de M13. **Release 1.1.0
+  cortado** tras M13: PR #21 (feature→dev), PR #22 (`release/1.1.0 → dev`, solo el
+  bump `npm version minor` → 1.1.0) y PR #23 (`dev → main`). `main` en v1.1.0
+  (footer verificado). Cierra la Fase 2.
 - **2026-07-12 · Sesión 12 — M12 UI tab Avanzada** ✅. Rama
   `feature/modulo-12-ui-avanzada` (7 commits granulares sobre `dev`). Tarea
   estructural multi-archivo; confirmadas 2 decisiones con Jef antes de codear:

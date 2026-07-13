@@ -139,6 +139,11 @@ export default function Calculadora({ locale, dict }: Props) {
   const [proteccionAbierto, setProteccionAbierto] = useState(false);
   const [varianzaAbierto, setVarianzaAbierto] = useState(false);
   const resultadoRef = useRef<HTMLDivElement>(null);
+  // Marca observable de hidratación: false en el HTML estático, true tras el
+  // primer efecto en cliente. Los e2e la esperan antes de interactuar (una
+  // interacción pre-hidratación se pierde y produce fallos fantasma, ESTADO).
+  const [hidratada, setHidratada] = useState(false);
+  useEffect(() => setHidratada(true), []);
 
   // Al calcular, scroll al resultado (docs/04 §1, docs/05 §4.3): suave, o salto
   // instantáneo con reduced-motion. En desktop ya está a la vista (columna fija).
@@ -298,6 +303,41 @@ export default function Calculadora({ locale, dict }: Props) {
     return undefined;
   })();
 
+  // Vínculo Impulso ↔ Aporte mensual (docs/07 §3): cuando el impulso APLICA de
+  // verdad (ambos campos + no clampeado), las ayudas de los dos campos de aporte
+  // nombran los años reales del impulso (fragmento `periodo`, con pluralización).
+  // Si solo están los años, el impulso aún no aplica (lo dice `avisoImpulso`).
+  // Gateado también a `impulsoAbierto`: las señales del vínculo (label teñido y
+  // copy dinámico) aparecen/desaparecen JUNTAS, solo con la sección visible; si
+  // no, el copy del Aporte mensual (que vive fuera del colapsable) quedaría
+  // hablando de "los primeros N años" sin el impulso a la vista con qué correferir.
+  const impulsoActivo = ((): { periodo: string } | null => {
+    if (tab === "basica" || !impulsoAbierto) return null;
+    const parsed = esquemaFormulario.safeParse(valores);
+    if (!parsed.success) return null;
+    const esc = aEscenario(parsed.data, tab);
+    if (!esc.impulso || esc.impulso.anios * 12 >= esc.duracionMeses) return null;
+    const n = esc.impulso.anios;
+    const periodo =
+      n === 1
+        ? t(dict, "campos.impulso.periodo.singular")
+        : t(dict, "campos.impulso.periodo.plural", { anios: n });
+    return { periodo };
+  })();
+
+  // Ayudas dinámicas de los dos campos de aporte. `{aporte}` = el label de
+  // Aporte mensual (fuente única del texto, no se duplica el literal).
+  const labelAporte = t(dict, "campos.aporteRegimen.label");
+  const ayudaAporteRegimen = impulsoActivo
+    ? t(dict, "campos.aporteRegimen.ayudaImpulso", { periodo: impulsoActivo.periodo })
+    : t(dict, "campos.aporteRegimen.ayuda");
+  const ayudaAporteImpulso = impulsoActivo
+    ? t(dict, "campos.impulso.aporte.ayudaImpulso", {
+        aporte: labelAporte,
+        periodo: impulsoActivo.periodo,
+      })
+    : t(dict, "campos.impulso.aporte.ayuda", { aporte: labelAporte });
+
   // Aviso suave de la sección Protección (docs/07 §3, nunca es un error), espejo
   // del de Impulso. Solo en Experto (docs/04 §2):
   // - incompleta: un solo campo lleno (XOR); la sección no se aplica.
@@ -321,6 +361,7 @@ export default function Calculadora({ locale, dict }: Props) {
   return (
     <section
       data-testid="calculadora"
+      data-hidratada={hidratada || undefined}
       lang={locale}
       aria-label={t(dict, "titulo")}
       className="mx-auto grid max-w-6xl gap-8 p-4 lg:grid-cols-2"
@@ -344,6 +385,10 @@ export default function Calculadora({ locale, dict }: Props) {
           {/* En M5 los tres tabs comparten los pasos 1–4; las secciones de Fase 2
             (impulso/protección/varianza/meta) llegan en M12–M13 (docs/04 §2). */}
           <form onSubmit={calcular} noValidate className="flex flex-col gap-6">
+            {/* La app calcula solo en USD (MVP): se avisa antes del primer campo. */}
+            <p data-testid="nota-moneda" className="text-sm text-texto-suave">
+              {t(dict, "moneda.nota")}
+            </p>
             <section aria-labelledby="paso-1" className="flex flex-col gap-4">
               <h2 id="paso-1" className="text-lg font-semibold">
                 {t(dict, "pasos.paso1")}
@@ -354,6 +399,10 @@ export default function Calculadora({ locale, dict }: Props) {
                 ayuda={t(dict, "campos.capitalInicial.ayuda")}
                 valor={valores.capitalInicial}
                 error={mensaje("capitalInicial")}
+                agrupaMiles
+                locale={locale}
+                moneda={t(dict, "moneda.codigo")}
+                monedaTooltip={t(dict, "moneda.tooltip")}
                 onCambio={(v) => cambiar("capitalInicial", v)}
                 onBlur={() => validarCampo("capitalInicial")}
               />
@@ -365,10 +414,15 @@ export default function Calculadora({ locale, dict }: Props) {
               </h2>
               <Campo
                 campo="aporteRegimen"
-                label={t(dict, "campos.aporteRegimen.label")}
-                ayuda={t(dict, "campos.aporteRegimen.ayuda")}
+                label={labelAporte}
+                ayuda={ayudaAporteRegimen}
                 valor={valores.aporteRegimen}
                 error={mensaje("aporteRegimen")}
+                agrupaMiles
+                locale={locale}
+                moneda={t(dict, "moneda.codigo")}
+                monedaTooltip={t(dict, "moneda.tooltip")}
+                resaltarLabel={tab !== "basica" && impulsoAbierto}
                 onCambio={(v) => cambiar("aporteRegimen", v)}
                 onBlur={() => validarCampo("aporteRegimen")}
               />
@@ -398,9 +452,13 @@ export default function Calculadora({ locale, dict }: Props) {
                   <Campo
                     campo="aporteImpulso"
                     label={t(dict, "campos.impulso.aporte.label")}
-                    ayuda={t(dict, "campos.impulso.aporte.ayuda")}
+                    ayuda={ayudaAporteImpulso}
                     valor={valores.aporteImpulso}
                     error={mensaje("aporteImpulso")}
+                    agrupaMiles
+                    locale={locale}
+                    moneda={t(dict, "moneda.codigo")}
+                    monedaTooltip={t(dict, "moneda.tooltip")}
                     onCambio={(v) => cambiar("aporteImpulso", v)}
                     onBlur={() => validarCampo("aporteImpulso")}
                   />
