@@ -13,6 +13,7 @@ import CampoDuracion from "./CampoDuracion";
 import CampoFrecuencia from "./CampoFrecuencia";
 import EstadoVacio from "./EstadoVacio";
 import Resultado from "./Resultado";
+import SeccionColapsable from "./SeccionColapsable";
 import Tabs from "./Tabs";
 import type { Tab } from "./tab";
 import { aEscenario } from "./esquema/a-escenario";
@@ -51,6 +52,9 @@ const DEFAULTS: Record<string, string> = {
   duracionUnidad: "a",
   tasaNominalAnual: "8",
   frecuencia: "12",
+  // Secciones opcionales arrancan vacías (docs/02 §6): "" cuenta como ausente.
+  aniosImpulso: "",
+  aporteImpulso: "",
 };
 
 // El evento GA4 `calcular` reporta el nivel con `tab` (b/a/e, docs/06 §2).
@@ -60,13 +64,18 @@ const TAB_EVENTO: Record<Tab, "b" | "a" | "e"> = {
   experto: "e",
 };
 
-// Orden de foco al primer error (docs/04 §3). Unidad y frecuencia no producen error.
+// Orden de foco al primer error (docs/04 §3), en el orden visual de los pasos.
+// El impulso vive en el Paso 2 (docs/04 §1). Unidad y frecuencia no producen error.
 const ORDEN_CAMPOS = [
   "capitalInicial",
   "aporteRegimen",
+  "aniosImpulso",
+  "aporteImpulso",
   "duracion",
   "tasaNominalAnual",
 ] as const;
+
+const CAMPOS_IMPULSO = ["aniosImpulso", "aporteImpulso"];
 
 // Isla React del formulario Básica (docs/04 §1–3). M5: pasos 1–4 + validación inline.
 // El botón Calcular solo valida; el cálculo y el render de resultados llegan en M6.
@@ -78,6 +87,8 @@ export default function Calculadora({ locale, dict }: Props) {
   const [errores, setErrores] = useState<Record<string, string>>({});
   // null hasta el primer cálculo válido (estado vacío, docs/04 §4).
   const [salida, setSalida] = useState<Salida | null>(null);
+  // La sección Impulso (Avanzada/Experto) arranca colapsada (docs/04 §2.3).
+  const [impulsoAbierto, setImpulsoAbierto] = useState(false);
   const resultadoRef = useRef<HTMLDivElement>(null);
 
   // Al calcular, scroll al resultado (docs/04 §1, docs/05 §4.3): suave, o salto
@@ -154,6 +165,9 @@ export default function Calculadora({ locale, dict }: Props) {
       setErrores(acc);
       const primero = ORDEN_CAMPOS.find((c) => acc[c]);
       if (primero) {
+        // Un error en el impulso solo es alcanzable con la sección abierta; si
+        // estuviera cerrada, la abrimos para que el campo enfocado sea visible.
+        if (CAMPOS_IMPULSO.includes(primero)) setImpulsoAbierto(true);
         const el = document.getElementById(`campo-${primero}`);
         el?.scrollIntoView({ behavior: "smooth", block: "center" });
         el?.focus();
@@ -186,6 +200,25 @@ export default function Calculadora({ locale, dict }: Props) {
     { id: "avanzada", label: t(dict, "tabs.avanzada") },
     { id: "experto", label: t(dict, "tabs.experto") },
   ];
+
+  // Aviso suave de la sección Impulso (docs/07 §3, nunca es un error):
+  // - incompleta: un solo campo lleno (XOR); la sección no se aplica.
+  // - clampeada: ambos completos y el impulso cubre todo el período (N*12 ≥ M).
+  // Son excluyentes (clampeada exige los dos campos, incompleta exige uno solo).
+  const avisoImpulso = ((): string | undefined => {
+    if (tab === "basica") return undefined;
+    const conAnios = valores.aniosImpulso.trim() !== "";
+    const conAporte = valores.aporteImpulso.trim() !== "";
+    if (conAnios !== conAporte) return t(dict, "seccion.incompleta");
+    const parsed = esquemaFormulario.safeParse(valores);
+    if (parsed.success) {
+      const esc = aEscenario(parsed.data, tab);
+      if (esc.impulso && esc.impulso.anios * 12 >= esc.duracionMeses) {
+        return t(dict, "seccion.clampeada.impulso");
+      }
+    }
+    return undefined;
+  })();
 
   return (
     <section
@@ -241,6 +274,48 @@ export default function Calculadora({ locale, dict }: Props) {
                 onCambio={(v) => cambiar("aporteRegimen", v)}
                 onBlur={() => validarCampo("aporteRegimen")}
               />
+
+              {/* Impulso inicial (docs/04 §1): sección colapsada del Paso 2,
+                  presente en Avanzada y Experto (no en Básica). */}
+              {tab !== "basica" && (
+                <SeccionColapsable
+                  id="seccion-impulso"
+                  titulo={t(dict, "campos.impulso.titulo")}
+                  abierto={impulsoAbierto}
+                  onToggle={() => setImpulsoAbierto((abierto) => !abierto)}
+                >
+                  <p className="text-sm text-texto-suave">
+                    {t(dict, "campos.impulso.ayuda")}
+                  </p>
+                  <Campo
+                    campo="aniosImpulso"
+                    label={t(dict, "campos.impulso.anios.label")}
+                    ayuda={t(dict, "campos.impulso.anios.ayuda")}
+                    valor={valores.aniosImpulso}
+                    error={mensaje("aniosImpulso")}
+                    inputMode="numeric"
+                    onCambio={(v) => cambiar("aniosImpulso", v)}
+                    onBlur={() => validarCampo("aniosImpulso")}
+                  />
+                  <Campo
+                    campo="aporteImpulso"
+                    label={t(dict, "campos.impulso.aporte.label")}
+                    ayuda={t(dict, "campos.impulso.aporte.ayuda")}
+                    valor={valores.aporteImpulso}
+                    error={mensaje("aporteImpulso")}
+                    onCambio={(v) => cambiar("aporteImpulso", v)}
+                    onBlur={() => validarCampo("aporteImpulso")}
+                  />
+                  {avisoImpulso && (
+                    <p
+                      data-testid="aviso-impulso"
+                      className="text-sm text-texto-suave"
+                    >
+                      {avisoImpulso}
+                    </p>
+                  )}
+                </SeccionColapsable>
+              )}
             </section>
 
             <section aria-labelledby="paso-3" className="flex flex-col gap-4">
