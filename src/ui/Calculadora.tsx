@@ -4,10 +4,12 @@ import type { FormEvent } from "react";
 import { track } from "../analytics/track";
 import {
   ahorroEscalonado,
+  bandaVarianza,
   calcular as calcularMotor,
+  costoProteccion,
   fijoEquivalente,
 } from "../core";
-import type { Resultado as ResultadoMotor } from "../core";
+import type { Banda, Resultado as ResultadoMotor } from "../core";
 import type { Diccionario } from "../i18n/diccionario";
 import type { Locale } from "../i18n/locale";
 import { t } from "../i18n/t";
@@ -36,6 +38,13 @@ interface Salida {
   /** Métricas de Avanzada (docs/06 §1): null si no hay impulso aplicado. */
   ahorro: number | null;
   fijo: number | null;
+  /** Métricas de Experto (docs/06 §1): null sin protección / sin varianza. */
+  costo: number | null;
+  banda: Banda | null;
+  /** Escalares para el copy de las métricas de Experto (docs/07 §4). */
+  aniosProteccion: number | null;
+  tasa: number;
+  varianza: number | null;
   animar: boolean;
 }
 
@@ -205,10 +214,15 @@ export default function Calculadora({ locale, dict }: Props) {
       duracionUnidad: datos.duracionUnidad,
       ahorro: ahorroEscalonado(escenario),
       fijo: fijoEquivalente(escenario),
+      costo: costoProteccion(escenario),
+      banda: bandaVarianza(escenario),
+      aniosProteccion: escenario.proteccion?.anios ?? null,
+      tasa: escenario.tasaNominalAnual,
+      varianza: escenario.varianza ?? null,
       animar: !prefiereReducir(),
     });
     // Telemetría (docs/06 §2): `con_impulso`/`con_proteccion` reflejan lo que de
-    // verdad entró al motor según el tab (protección es UI de M13, hoy siempre off).
+    // verdad entró al motor según el tab (ambas secciones ya son tecleables).
     track("calcular", {
       tab: TAB_EVENTO[tabActivo] ?? "b",
       con_impulso: escenario.impulso !== undefined,
@@ -535,6 +549,11 @@ export default function Calculadora({ locale, dict }: Props) {
             duracionUnidad={salida.duracionUnidad}
             ahorro={salida.ahorro}
             fijo={salida.fijo}
+            costo={salida.costo}
+            banda={salida.banda}
+            aniosProteccion={salida.aniosProteccion}
+            tasa={salida.tasa}
+            varianza={salida.varianza}
             locale={locale}
             dict={dict}
             animar={salida.animar}
