@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { abrir } from "./util";
+
 // Tab Avanzada (M12, docs/04 §6): "Ver un ejemplo" (F2), el impulso solo aplica
 // fuera de Básica (docs/04 §2) y los avisos suaves de la sección (docs/07 §3).
 //
@@ -11,7 +13,7 @@ test.describe("tab Avanzada — impulso inicial (M12)", () => {
   test("F2: 'Ver un ejemplo' precarga E1 en Avanzada y calcula 1 006 969", async ({
     page,
   }) => {
-    await page.goto("/es/");
+    await abrir(page, "/es/");
     await expect(page.getByTestId("estado-vacio")).toBeVisible();
 
     await page.getByTestId("ver-ejemplo").click();
@@ -45,7 +47,7 @@ test.describe("tab Avanzada — impulso inicial (M12)", () => {
   test("Básica ignora el impulso; los valores persisten al volver (docs/04 §2)", async ({
     page,
   }) => {
-    await page.goto("/es/");
+    await abrir(page, "/es/");
     await page.getByTestId("ver-ejemplo").click();
     await expect(page.getByTestId("metrica-ahorro")).toBeVisible();
 
@@ -69,7 +71,7 @@ test.describe("tab Avanzada — impulso inicial (M12)", () => {
   test("avisos suaves: sección incompleta y sección clampeada (docs/07 §3)", async ({
     page,
   }) => {
-    await page.goto("/es/");
+    await abrir(page, "/es/");
     await page.getByTestId("tab-avanzada").click();
     await page.getByTestId("seccion-impulso-toggle").click();
 

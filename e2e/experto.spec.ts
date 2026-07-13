@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { abrir } from "./util";
+
 // Tab Experto (M13, docs/04 §6): las secciones "Protección final" y "Varianza"
 // del Paso 4, el costo de la protección (G2) y la banda de varianza (V1) en
 // resultados (docs/06 §1), que Básica las ignora (docs/04 §2) y los avisos suaves
@@ -13,7 +15,7 @@ test.describe("tab Experto — protección y varianza (M13)", () => {
   test("costo de la protección: E1 + protección 5/5 % → 137 928,15 (G2)", async ({
     page,
   }) => {
-    await page.goto("/es/");
+    await abrir(page, "/es/");
     await page.getByTestId("tab-experto").click();
     // Esperar a que Experto quede seleccionado antes de "Ver un ejemplo": así
     // cargarEjemplo lee tab="experto" y se queda ahí (no salta a Avanzada).
@@ -45,7 +47,7 @@ test.describe("tab Experto — protección y varianza (M13)", () => {
   test("banda de varianza: escenario §3 con v=1 → [564 955,36 ; 816 454,87] (V1)", async ({
     page,
   }) => {
-    await page.goto("/es/");
+    await abrir(page, "/es/");
     await page.getByTestId("tab-experto").click();
 
     // Escenario §3 SIN impulso (P=10 000, régimen 420, 25 años, 10 %, mensual),
@@ -72,7 +74,7 @@ test.describe("tab Experto — protección y varianza (M13)", () => {
   test("Básica ignora la protección; los valores persisten al volver (docs/04 §2)", async ({
     page,
   }) => {
-    await page.goto("/es/");
+    await abrir(page, "/es/");
     await page.getByTestId("tab-experto").click();
     await expect(page.getByTestId("tab-experto")).toHaveAttribute(
       "aria-selected",
@@ -100,7 +102,7 @@ test.describe("tab Experto — protección y varianza (M13)", () => {
   test("avisos suaves: protección incompleta y clampeada (docs/07 §3)", async ({
     page,
   }) => {
-    await page.goto("/es/");
+    await abrir(page, "/es/");
     await page.getByTestId("tab-experto").click();
     await page.getByTestId("seccion-proteccion-toggle").click();
 

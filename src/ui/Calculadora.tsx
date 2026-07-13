@@ -139,6 +139,11 @@ export default function Calculadora({ locale, dict }: Props) {
   const [proteccionAbierto, setProteccionAbierto] = useState(false);
   const [varianzaAbierto, setVarianzaAbierto] = useState(false);
   const resultadoRef = useRef<HTMLDivElement>(null);
+  // Marca observable de hidratación: false en el HTML estático, true tras el
+  // primer efecto en cliente. Los e2e la esperan antes de interactuar (una
+  // interacción pre-hidratación se pierde y produce fallos fantasma, ESTADO).
+  const [hidratada, setHidratada] = useState(false);
+  useEffect(() => setHidratada(true), []);
 
   // Al calcular, scroll al resultado (docs/04 §1, docs/05 §4.3): suave, o salto
   // instantáneo con reduced-motion. En desktop ya está a la vista (columna fija).
@@ -321,6 +326,7 @@ export default function Calculadora({ locale, dict }: Props) {
   return (
     <section
       data-testid="calculadora"
+      data-hidratada={hidratada || undefined}
       lang={locale}
       aria-label={t(dict, "titulo")}
       className="mx-auto grid max-w-6xl gap-8 p-4 lg:grid-cols-2"
