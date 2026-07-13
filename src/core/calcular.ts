@@ -12,7 +12,7 @@ import { tasaMensualEquivalente } from "./tasas";
 export function calcular(e: Escenario): Resultado {
   const iMes = tasaMensualEquivalente(e.tasaNominalAnual, e.frecuencia);
   const tasa: (t: number) => number = () => iMes;
-  const aporte: (t: number) => number = () => e.aporteRegimen;
+  const aporte = construirAporte(e);
 
   const filas: FilaAnual[] = [];
   let balance = e.capitalInicial;
@@ -49,4 +49,18 @@ export function calcular(e: Escenario): Resultado {
   const multiplicador = totalAportado === 0 ? 0 : balance / totalAportado;
 
   return { balanceFinal: balance, filas, totalAportado, interesTotal, multiplicador };
+}
+
+/**
+ * Hook `aporte(t)` (docs/02 §4). Sin impulso: aporte de régimen constante. Con
+ * impulso: durante los primeros `corte = min(N*12, duracionMeses)` meses el
+ * aporte es `X` (impulso), luego vuelve al régimen. El `min` es el clampeo del
+ * borde 2 (N*12 ≥ duración → todo el período usa X).
+ */
+function construirAporte(e: Escenario): (t: number) => number {
+  if (!e.impulso) return () => e.aporteRegimen;
+
+  const { anios, aporteMensual } = e.impulso;
+  const corte = Math.min(anios * 12, e.duracionMeses);
+  return (t) => (t <= corte ? aporteMensual : e.aporteRegimen);
 }
